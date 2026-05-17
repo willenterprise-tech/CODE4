@@ -1,0 +1,15 @@
+{
+  "name": "Code4",
+  "short_name": "Code4",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#081225",
+  "theme_color": "#081225",
+  "icons": [
+    {
+      "src": "assets/images/Code4%20Logo.1.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
