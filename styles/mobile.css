@@ -1,0 +1,63 @@
+/* styles/mobile.css — mobile-specific overrides */
+:root {
+  --container-padding: 1rem;
+}
+
+.container {
+  padding-left: var(--container-padding);
+  padding-right: var(--container-padding);
+}
+
+.site-header .header-inner {
+  padding: 0.5rem 0;
+}
+
+.nav-menu {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nav-menu a {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.95rem;
+}
+
+.hero-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.hero-right { order: 2; }
+.hero-left { order: 1; }
+
+.device-mockup, .wenix-main, .thumb { max-width: 100%; height: auto; }
+
+.projects-grid, .services-grid, .features-grid, .stats-grid { grid-template-columns: 1fr !important; }
+
+.trusted-logos { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: space-between; }
+
+img { max-width: 100%; height: auto; display: block; }
+
+.contact-form .row { display: block; gap: 0.5rem; }
+
+.contact-form input, .contact-form textarea { width: 100%; box-sizing: border-box; }
+
+.site-header .logo img { max-height: 36px; }
+
+.footer-grid { grid-template-columns: 1fr; gap: 1rem; }
+
+.hero-ctas { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.skip-link { top: 0.5rem; left: 0.5rem; }
+
+.projects-grid .proj-img { background-size: cover; background-position: center; min-height: 160px; }
+
+h1 { font-size: 1.6rem; line-height: 1.2; }
+h2, h3 { font-size: 1.25rem; }
+
+.btn-primary, .btn-ghost, .btn-cta { padding: 0.6rem 0.9rem; font-size: 0.95rem; }
