@@ -32,6 +32,8 @@ body{margin:0;font-family:'Space Grotesk',system-ui,-apple-system,Segoe UI,Robot
 .hero-left h1{font-size:2rem;line-height:1.05;margin:0 0 0.6rem;color:var(--white);letter-spacing:0.6px}
 .hero-left .sub{color:var(--cyan);font-weight:600;margin:0 0 0.5rem}
 .hero-left .desc{color:var(--muted);margin-bottom:1rem}
+.hero-ctas{flex-direction:column;width:100%}
+.hero-ctas a{width:100%;text-align:center;padding:0.7rem 1.2rem}
 .hero-ctas{display:flex;gap:0.75rem}
 .btn-primary{background:linear-gradient(90deg,var(--primary),var(--cyan));padding:0.6rem 1rem;border-radius:10px;color:#fff;text-decoration:none;font-weight:700}
 .btn-ghost{padding:0.6rem 1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.06);color:var(--muted);text-decoration:none}
@@ -266,10 +268,23 @@ main{position:relative;z-index:1}
 
 @media (max-width:720px){
   .mobile-toggle{display:inline-flex}
-  /* collapsed nav by default */
-  .nav-menu{display:none;position:absolute;top:100%;left:0;right:0;background:linear-gradient(180deg,rgba(3,8,22,0.98),rgba(3,8,22,0.98));padding:0.75rem 1rem;flex-direction:column;gap:0.6rem;z-index:60;border-top:1px solid rgba(255,255,255,0.03)}
-  .nav-menu.open{display:flex}
-  .nav-menu a{padding:0.6rem 0;color:var(--white);font-size:1rem;border-bottom:1px solid rgba(255,255,255,0.03)}
+  /* collapsed nav by default — expanded rules improve touch targets and hit areas */
+  .nav-menu{
+    display:none;
+    position:absolute;
+    top:100%;
+    left:0;
+    right:0;
+    background:linear-gradient(180deg,rgba(3,8,22,0.98),rgba(3,8,22,0.98));
+    padding:0.25rem 0.25rem;
+    flex-direction:column;
+    gap:0;
+    z-index:9999;
+    border-top:1px solid rgba(255,255,255,0.03);
+    pointer-events: none; /* don't capture when closed */
+  }
+  .nav-menu.open{display:flex !important;pointer-events: auto !important}
+  .nav-menu a{display:block;width:100%;padding:0.75rem 1rem;color:var(--white);font-size:1rem;border-bottom:1px solid rgba(255,255,255,0.03);min-height:44px;box-sizing:border-box;touch-action:manipulation;-webkit-user-select:text;user-select:text}
   .nav-menu a:last-child{border-bottom:none}
   .mobile-toggle.open .hamburger{transform:rotate(45deg);background:transparent}
   .mobile-toggle.open .hamburger::before{transform:rotate(90deg);top:0}
@@ -308,14 +323,14 @@ main{position:relative;z-index:1}
 
 /* Make form inputs full width on narrow screens */
 .contact-form .row{display:block}
-.contact-form input,.contact-form textarea{width:100%;box-sizing:border-box}
+.contact-form input,.contact-form textarea{width:100%;box-sizing:border-box;font-size:16px;min-height:48px;margin-bottom:0.6rem}
 
 /* Slightly smaller headings on phones */
 h1{font-size:1.6rem;line-height:1.2}
 h2,h3{font-size:1.25rem}
 
-/* Buttons slightly more compact */
-.btn-primary,.btn-ghost,.btn-cta{padding:0.6rem 0.9rem;font-size:0.95rem}
+/* Buttons with better touch targets */
+.btn-primary,.btn-ghost,.btn-cta{padding:0.7rem 1.2rem;font-size:1rem;min-height:44px;min-width:44px}
 
 /* Reduce footer columns */
 .footer-grid{grid-template-columns:1fr;gap:1rem}

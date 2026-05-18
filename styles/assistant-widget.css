@@ -49,3 +49,31 @@
 /* small helpers */
 .c4a-hidden{display:none !important}
 .c4a-muted{color:rgba(255,255,255,0.6);font-size:12px}
+
+/* Mobile responsiveness */
+@media (max-width:768px){
+  html{overflow-x:hidden}
+  #c4-assistant{position:fixed;right:8px;bottom:16px;left:auto;z-index:99999}
+  .c4a-panel{width:100vw;width:100dvw;max-width:360px;height:480px;margin-right:0;margin-left:auto;box-sizing:border-box;backdrop-filter:none !important;box-shadow:none !important;background:rgba(2,6,23,0.96) !important;border:1px solid rgba(255,255,255,0.03) !important}
+  .c4a-halo,.c4a-pulse{display:none !important}
+  .c4a-robot-btn{width:72px;height:72px;box-shadow:none !important}
+  .c4a-robot-svg{width:56px;height:56px;filter:none !important}
+  .c4a-bubble{display:none}
+}
+
+@media (max-width:480px){
+  html{overflow-x:hidden}
+  #c4-assistant{position:fixed;right:8px;bottom:8px;left:auto;z-index:99999}
+  .c4a-panel{width:100vw;width:100dvw;max-width:340px;height:420px;margin-right:0;margin-left:auto;box-sizing:border-box;backdrop-filter:none !important;box-shadow:none !important;background:rgba(2,6,23,0.96) !important;border:1px solid rgba(255,255,255,0.03) !important}
+  .c4a-halo,.c4a-pulse{display:none !important}
+  .c4a-robot-btn{width:64px;height:64px;margin-right:0;box-shadow:none !important}
+  .c4a-robot-svg{width:48px;height:48px;filter:none !important}
+  .c4a-msg{max-width:90%;padding:8px 10px;font-size:0.9rem}
+  .c4a-chat-header{padding:10px 12px}
+  .c4a-quick-actions{padding:8px 12px;gap:6px}
+  .c4a-quick-btn{padding:5px 7px;font-size:0.8rem}
+  .c4a-input-bar{padding:8px 10px;gap:6px}
+  .c4a-input input{padding:8px 10px;font-size:16px}
+  .c4a-send{padding:6px}
+  .c4a-bubble{display:none}
+}

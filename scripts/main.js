@@ -6,6 +6,13 @@ document.addEventListener('DOMContentLoaded', function(){
   // If user has previously toggled, use that; otherwise default to OS preference
   let animationsDisabled = storedDisabled !== null ? storedDisabled : prefersReducedMotion;
 
+  // Force-disable heavy visuals on small screens to avoid scroll jank
+  try{
+    if (window && window.innerWidth <= 720) {
+      animationsDisabled = true;
+    }
+  }catch(e){ /* ignore in non-browser env */ }
+
   const toggleBtn = document.getElementById('toggle-animations');
   if(toggleBtn){
     // support new switch markup: <button> <span.anim-label> <span.anim-switch><span.anim-thumb></span></span> <span.status-text/></button>
