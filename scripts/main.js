@@ -5,6 +5,16 @@ document.addEventListener('DOMContentLoaded', function(){
   // Default behaviour: if user previously toggled, respect that; otherwise animations are ON by default
   let animationsDisabled = storedDisabled !== null ? storedDisabled : false;
 
+  // Detect low-end / mobile-like devices and avoid starting heavy visuals (particles, many DOM floaters)
+  const isTouch = (typeof window !== 'undefined') && ('ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches));
+  const deviceMemory = (typeof navigator !== 'undefined' && navigator.deviceMemory) ? navigator.deviceMemory : null;
+  const hwConcurrency = (typeof navigator !== 'undefined' && navigator.hardwareConcurrency) ? navigator.hardwareConcurrency : null;
+  const smallViewport = (typeof window !== 'undefined') && window.innerWidth <= 720;
+  const lowMemory = deviceMemory !== null && deviceMemory <= 2;
+  const fewCores = hwConcurrency !== null && hwConcurrency <= 2;
+  const isLowEnd = isTouch && (lowMemory || fewCores || smallViewport);
+  const heavyVisualsAllowed = !isLowEnd;
+
   const toggleBtn = document.getElementById('toggle-animations');
   if(toggleBtn){
     // support new switch markup: <button> <span.anim-label> <span.anim-switch><span.anim-thumb></span></span> <span.status-text/></button>
@@ -110,9 +120,16 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function startAnimations(){
     document.body.classList.remove('animations-disabled');
-    startSymbols();
-    startParticles();
+    // Start light-weight reveals regardless of device
     startReveal();
+    // Only enable heavy visuals on capable devices
+    if(heavyVisualsAllowed){
+      startSymbols();
+      startParticles();
+    } else {
+      stopSymbols();
+      stopParticles();
+    }
     if(toggleBtn){
       toggleBtn.setAttribute('aria-pressed', 'false');
       toggleBtn.classList.add('active');
