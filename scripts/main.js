@@ -13,7 +13,15 @@ document.addEventListener('DOMContentLoaded', function(){
   const lowMemory = deviceMemory !== null && deviceMemory <= 2;
   const fewCores = hwConcurrency !== null && hwConcurrency <= 2;
   const isLowEnd = isTouch && (lowMemory || fewCores || smallViewport);
-  const heavyVisualsAllowed = !isLowEnd;
+  let heavyVisualsAllowed = !isLowEnd;
+
+  // If on a small touch device, prefer disabling animations by default to avoid scroll jank
+  const FORCE_DISABLE_ANIMATIONS_MAX_WIDTH = 820;
+  const userPrefSet = storedDisabled !== null;
+  if (isTouch && window.innerWidth <= FORCE_DISABLE_ANIMATIONS_MAX_WIDTH && !userPrefSet) {
+    animationsDisabled = true;
+  }
+  if (animationsDisabled) heavyVisualsAllowed = false;
 
   const toggleBtn = document.getElementById('toggle-animations');
   if(toggleBtn){
