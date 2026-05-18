@@ -2,16 +2,8 @@ document.addEventListener('DOMContentLoaded', function(){
   const storageKey = 'c4_animations_disabled';
   const storedRaw = localStorage.getItem(storageKey);
   const storedDisabled = storedRaw === 'true' ? true : (storedRaw === 'false' ? false : null);
-  const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // If user has previously toggled, use that; otherwise default to OS preference
-  let animationsDisabled = storedDisabled !== null ? storedDisabled : prefersReducedMotion;
-
-  // Force-disable heavy visuals on small screens to avoid scroll jank
-  try{
-    if (window && window.innerWidth <= 720) {
-      animationsDisabled = true;
-    }
-  }catch(e){ /* ignore in non-browser env */ }
+  // Default behaviour: if user previously toggled, respect that; otherwise animations are ON by default
+  let animationsDisabled = storedDisabled !== null ? storedDisabled : false;
 
   const toggleBtn = document.getElementById('toggle-animations');
   if(toggleBtn){
