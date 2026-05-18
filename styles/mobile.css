@@ -72,6 +72,14 @@ body{margin:0;font-family:'Space Grotesk', system-ui,-apple-system,'Segoe UI',Ro
 .particles-canvas{display:none}
 .hero-bg-anim{opacity:0.6}
 
+/* When the user is actively scrolling, reduce/stop CSS animations to prevent jank */
+.scrolling-paused .hero-bg-anim,
+.scrolling-paused .floater,
+.scrolling-paused .particles-canvas,
+.scrolling-paused .c4a-robot-floating,
+.scrolling-paused .wenix-main,
+.scrolling-paused .mock-screen{animation:none !important;transition:none !important}
+
 /* Lightbox tweaks for mobile */
 .lightbox-nav{font-size:1.8rem;padding:0.35rem 0.6rem}
 .lightbox-close{font-size:1.6rem;top:12px;right:12px}
@@ -82,6 +90,7 @@ body{margin:0;font-family:'Space Grotesk', system-ui,-apple-system,'Segoe UI',Ro
 .process .timeline li{flex:0 0 80%;min-width:240px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:1rem;border-radius:10px;box-shadow:0 14px 36px rgba(0,0,0,0.5);scroll-snap-align:start;display:flex;flex-direction:column;gap:0.4rem}
 .process .timeline li strong{font-size:1rem;margin-bottom:0.25rem}
 .process .timeline li span{color:var(--muted);font-size:0.95rem}
+
 
 /* On wider screens let globals.css control layout again */
 
