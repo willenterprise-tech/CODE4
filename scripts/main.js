@@ -276,6 +276,46 @@ document.addEventListener('DOMContentLoaded', function(){
     function showPrev(){ openLightboxAt(lbIndex - 1); }
     function showNext(){ openLightboxAt(lbIndex + 1); }
 
+    // Swipe support for hero main image (mobile): allow horizontal swipes to change images
+    try {
+      const mockEl = document.querySelector('.mock-screen') || mainImg.parentElement;
+      let touchStartX = null;
+      let touchStartY = null;
+      const SWIPE_THRESHOLD = 40;
+      if (mockEl) {
+        mockEl.addEventListener('touchstart', function(e){
+          if (!e.touches || e.touches.length !== 1) return;
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }, {passive:true});
+
+        mockEl.addEventListener('touchend', function(e){
+          if (touchStartX === null) return;
+          const t = e.changedTouches && e.changedTouches[0];
+          if (!t) { touchStartX = null; touchStartY = null; return; }
+          const dx = t.clientX - touchStartX;
+          const dy = (touchStartY !== null) ? t.clientY - touchStartY : 0;
+          touchStartX = null; touchStartY = null;
+          // require a mostly-horizontal swipe and a minimum distance
+          if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) < Math.abs(dy)) return;
+          const currentIdx = findIndexForSrc(mainImg.src);
+          if (dx < -SWIPE_THRESHOLD) {
+            // swipe left -> next
+            const nextIdx = (currentIdx + 1) % imageList.length;
+            const tEl = thumbs[nextIdx];
+            if (tEl) swapTo(tEl);
+          } else if (dx > SWIPE_THRESHOLD) {
+            const prevIdx = (currentIdx - 1 + imageList.length) % imageList.length;
+            const tEl = thumbs[prevIdx];
+            if (tEl) swapTo(tEl);
+          }
+        }, {passive:true});
+      }
+    } catch (err) {
+      // don't interrupt other scripts if swipe initialization fails
+      console.warn('Hero swipe init failed', err);
+    }
+
     if(mainImg){
       mainImg.style.cursor = 'zoom-in';
       mainImg.addEventListener('click', function(){
@@ -298,5 +338,26 @@ document.addEventListener('DOMContentLoaded', function(){
       });
     }
   })();
+
+  // Mobile nav toggle: show/hide the collapsed nav on small screens
+  const mobileToggle = document.getElementById('mobile-nav-toggle');
+  const navMenu = document.querySelector('.nav-menu');
+  if(mobileToggle && navMenu){
+    function closeMobileNav(){
+      navMenu.classList.remove('open');
+      mobileToggle.setAttribute('aria-expanded', 'false');
+      mobileToggle.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    mobileToggle.addEventListener('click', function(e){
+      e.preventDefault();
+      const opened = navMenu.classList.toggle('open');
+      mobileToggle.setAttribute('aria-expanded', String(opened));
+      mobileToggle.classList.toggle('open', opened);
+      document.body.style.overflow = opened ? 'hidden' : '';
+    });
+    navMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', function(){ if(window.innerWidth <= 720) closeMobileNav(); }));
+    window.addEventListener('resize', function(){ if(window.innerWidth > 720 && navMenu.classList.contains('open')) closeMobileNav(); });
+  }
 
 });
