@@ -108,6 +108,7 @@
     overflow:hidden;
   }
   .c4a-panel.show{overflow:auto}
+  .c4a-halo,.c4a-pulse{display:none !important}
   .c4a-robot-btn{width:64px;height:64px;box-shadow:none !important}
   .c4a-robot-svg{width:56px;height:56px;filter:none !important}
   .c4a-bubble{display:none}
@@ -143,6 +144,7 @@
     overflow:hidden;
   }
   .c4a-panel.show{overflow:auto}
+  .c4a-halo,.c4a-pulse{display:none !important}
   .c4a-robot-btn{width:60px;height:60px;margin-right:0;box-shadow:none !important}
   .c4a-robot-svg{width:48px;height:48px;filter:none !important}
   .c4a-msg{max-width:90%;padding:8px 10px;font-size:0.95rem}
