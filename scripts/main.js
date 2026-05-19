@@ -12,16 +12,12 @@ document.addEventListener('DOMContentLoaded', function(){
   const smallViewport = (typeof window !== 'undefined') && window.innerWidth <= 720;
   const lowMemory = deviceMemory !== null && deviceMemory <= 2;
   const fewCores = hwConcurrency !== null && hwConcurrency <= 2;
-  const isLowEnd = isTouch && (lowMemory || fewCores || smallViewport);
-  let heavyVisualsAllowed = !isLowEnd;
+  // Animations are ON by default (including mobile). Respect user preference only.
+  let heavyVisualsAllowed = !animationsDisabled;
 
-  // If on a small touch device, prefer disabling animations by default to avoid scroll jank
-  const FORCE_DISABLE_ANIMATIONS_MAX_WIDTH = 820;
-  const userPrefSet = storedDisabled !== null;
-  if (isTouch && window.innerWidth <= FORCE_DISABLE_ANIMATIONS_MAX_WIDTH && !userPrefSet) {
-    animationsDisabled = true;
-  }
-  if (animationsDisabled) heavyVisualsAllowed = false;
+  // Do not auto-disable animations on mobile; allow the user to choose via the toggle.
+  // `animationsDisabled` is already initialized from saved preference (if any).
+  heavyVisualsAllowed = !animationsDisabled;
 
   const toggleBtn = document.getElementById('toggle-animations');
   if(toggleBtn){

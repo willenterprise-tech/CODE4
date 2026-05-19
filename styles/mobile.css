@@ -14,7 +14,7 @@ body{margin:0;font-family:'Space Grotesk', system-ui,-apple-system,'Segoe UI',Ro
 .site-header{position:sticky;top:0;z-index:100;backdrop-filter:blur(8px);background:linear-gradient(180deg,rgba(8,18,37,0.96),rgba(8,18,37,0.96));border-bottom:1px solid rgba(255,255,255,0.03)}
 .header-inner{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1rem}
 .logo{display:flex;align-items:center;gap:0.6rem;text-decoration:none;color:var(--white)}
-.logo img{height:36px;width:auto}
+.logo img{height:36px;width:auto;border-radius:8px}
 .brand-name{font-weight:700;font-size:1rem}
 .brand-tag{font-size:0.72rem;color:var(--muted)}
 
@@ -69,7 +69,7 @@ body{margin:0;font-family:'Space Grotesk', system-ui,-apple-system,'Segoe UI',Ro
 .cta-actions a{width:100%}
 
 /* Performance */
-.particles-canvas{display:none}
+.particles-canvas{display:block}
 .hero-bg-anim{opacity:0.6}
 
 /* When the user is actively scrolling, reduce/stop CSS animations to prevent jank */

@@ -70,6 +70,9 @@ export default function RobotAssistant(){
 
   // follow cursor mildly
   useEffect(()=>{
+    // disable head-follow and robot display on narrow/mobile viewports
+    const mq = window.matchMedia ? window.matchMedia('(max-width:768px)') : null
+    if(mq && mq.matches) return
     function onMove(e: MouseEvent){
       const x = (e.clientX / window.innerWidth) * 2 - 1
       const y = (e.clientY / window.innerHeight) * 2 - 1
