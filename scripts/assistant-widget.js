@@ -60,6 +60,140 @@
   const input = root.querySelector('.c4a-input input')
   const sendBtn = root.querySelector('.c4a-send')
 
+  // allow vertical page scroll by default but permit horizontal drag gestures
+  try { btn.style.touchAction = btn.style.touchAction || 'pan-y'; } catch (err) { /* ignore */ }
+
+  // Dragging state for the floating bot
+  let dragState = {
+    pointerId: null,
+    startX: 0,
+    startY: 0,
+    offsetX: 0,
+    offsetY: 0,
+    moved: false,
+    active: false,
+    longPressTimer: null
+  }
+  let suppressClick = false
+  const DRAG_THRESHOLD = 8
+  const LONG_PRESS_MS = 220
+
+  function prepareForDrag(clientX, clientY){
+    const rect = btn.getBoundingClientRect()
+    // switch to fixed left/top positioning so we can move freely
+    btn.style.position = 'fixed'
+    btn.style.left = rect.left + 'px'
+    btn.style.top = rect.top + 'px'
+    btn.style.right = 'auto'
+    btn.style.bottom = 'auto'
+    btn.style.transform = 'none'
+    btn.style.zIndex = '2147483647'
+  }
+
+  function onPointerDown(e){
+    // only react to primary buttons/touches
+    if (e.button && e.button !== 0) return
+    dragState.pointerId = e.pointerId
+    dragState.startX = e.clientX
+    dragState.startY = e.clientY
+    const rect = btn.getBoundingClientRect()
+    dragState.offsetX = e.clientX - rect.left
+    dragState.offsetY = e.clientY - rect.top
+    dragState.moved = false
+    dragState.active = false
+
+    // On touch allow long-press to pick up the bot (for vertical drags too)
+    if (e.pointerType === 'touch'){
+      dragState.longPressTimer = setTimeout(()=>{
+        if (!dragState.moved){
+          dragState.active = true
+          btn.classList.add('dragging')
+          prepareForDrag(e.clientX, e.clientY)
+        }
+      }, LONG_PRESS_MS)
+    } else {
+      // mouse/pen: start dragging immediately
+      dragState.active = true
+      btn.classList.add('dragging')
+      prepareForDrag(e.clientX, e.clientY)
+      e.preventDefault()
+    }
+
+    document.addEventListener('pointermove', onPointerMove)
+    document.addEventListener('pointerup', onPointerUp)
+    document.addEventListener('pointercancel', onPointerUp)
+  }
+
+  function onPointerMove(e){
+    if (dragState.pointerId !== e.pointerId) return
+    const dx = e.clientX - dragState.startX
+    const dy = e.clientY - dragState.startY
+
+    if (!dragState.moved && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)){
+      dragState.moved = true
+      // if not active yet (touch), decide whether this is a horizontal drag or a scroll
+      if (!dragState.active){
+        if (e.pointerType === 'touch'){
+          if (Math.abs(dx) > Math.abs(dy)){
+            // horizontal-dominant -> start dragging
+            dragState.active = true
+            btn.classList.add('dragging')
+            if (dragState.longPressTimer){ clearTimeout(dragState.longPressTimer); dragState.longPressTimer = null }
+            prepareForDrag(e.clientX, e.clientY)
+          } else {
+            // vertical-dominant -> abort dragging and allow page scroll
+            cleanupPointerListeners()
+            return
+          }
+        }
+      }
+    }
+
+    if (dragState.active){
+      // prevent page scroll while actively dragging
+      e.preventDefault()
+      const left = e.clientX - dragState.offsetX
+      const top = e.clientY - dragState.offsetY
+      const vw = window.innerWidth
+      const vh = window.innerHeight
+      const rect = btn.getBoundingClientRect()
+      const w = rect.width
+      const h = rect.height
+      const clampedLeft = Math.max(8, Math.min(left, vw - w - 8))
+      const clampedTop = Math.max(8, Math.min(top, vh - h - 8))
+      btn.style.left = clampedLeft + 'px'
+      btn.style.top = clampedTop + 'px'
+      suppressClick = true
+    }
+  }
+
+  function onPointerUp(e){
+    if (dragState.longPressTimer){ clearTimeout(dragState.longPressTimer); dragState.longPressTimer = null }
+    if (dragState.pointerId !== e.pointerId){ cleanupPointerListeners(); return }
+    if (dragState.active){
+      // finish drag
+      btn.classList.remove('dragging')
+      // leave the inline left/top so position persists visually
+      // briefly suppress the following click that pointerup may trigger
+      suppressClick = true
+      setTimeout(()=> { suppressClick = false }, 50)
+    }
+    cleanupPointerListeners()
+  }
+
+  function cleanupPointerListeners(){
+    try { document.removeEventListener('pointermove', onPointerMove) } catch(err){}
+    try { document.removeEventListener('pointerup', onPointerUp) } catch(err){}
+    try { document.removeEventListener('pointercancel', onPointerUp) } catch(err){}
+    if (dragState.longPressTimer){ clearTimeout(dragState.longPressTimer); dragState.longPressTimer = null }
+    dragState.pointerId = null
+    dragState.active = false
+    dragState.moved = false
+  }
+
+  // attach pointerdown for drag behavior
+  btn.addEventListener('pointerdown', onPointerDown)
+
   // helper to add message
   function addMessage(from, text){
     const el = document.createElement('div')
