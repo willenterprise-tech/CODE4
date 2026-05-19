@@ -15,11 +15,13 @@ const SUGGESTIONS = [
 ]
 
 export default function RobotAssistant(){
+  const rootRef = useRef<HTMLDivElement|null>(null)
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([{ id: 'welcome', from: 'bot', text: "Hi! I'm C4-Bot. How can I help you today?" }])
   const [isResponding, setResponding] = useState(false)
   const [headFollow, setHeadFollow] = useState({ x: 0, y: 0 })
   const [isTouchDevice, setIsTouchDevice] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const prefersReducedMotion = useReducedMotion()
 
   // simple response mapping
@@ -72,15 +74,25 @@ export default function RobotAssistant(){
 
   // follow cursor mildly
   useEffect(()=>{
-    const media = window.matchMedia('(pointer: coarse)')
-    setIsTouchDevice(media.matches)
-    const handleChange = () => setIsTouchDevice(media.matches)
-    media.addEventListener?.('change', handleChange)
-    return ()=> media.removeEventListener?.('change', handleChange)
+    const pointerMedia = window.matchMedia('(pointer: coarse)')
+    const mobileMedia = window.matchMedia('(max-width: 768px)')
+    setIsTouchDevice(pointerMedia.matches)
+    setIsMobile(mobileMedia.matches)
+
+    const pointerListener = (evt: MediaQueryListEvent) => setIsTouchDevice(evt.matches)
+    const mobileListener = (evt: MediaQueryListEvent) => setIsMobile(evt.matches)
+
+    pointerMedia.addEventListener?.('change', pointerListener)
+    mobileMedia.addEventListener?.('change', mobileListener)
+
+    return () => {
+      pointerMedia.removeEventListener?.('change', pointerListener)
+      mobileMedia.removeEventListener?.('change', mobileListener)
+    }
   }, [])
 
   useEffect(()=>{
-    if(prefersReducedMotion || isTouchDevice) return
+    if(prefersReducedMotion || isTouchDevice || isMobile) return
     function onMove(e: MouseEvent){
       const x = (e.clientX / window.innerWidth) * 2 - 1
       const y = (e.clientY / window.innerHeight) * 2 - 1
@@ -88,41 +100,61 @@ export default function RobotAssistant(){
     }
     window.addEventListener('mousemove', onMove)
     return ()=> window.removeEventListener('mousemove', onMove)
-  }, [prefersReducedMotion, isTouchDevice])
+  }, [prefersReducedMotion, isTouchDevice, isMobile])
 
-  // wave once on load
   const [didWave, setDidWave] = useState(false)
   useEffect(()=>{ setTimeout(()=> setDidWave(true), 800) }, [])
 
-  return (
-    <div className="c4-robot-wrap">
-      <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:10}}>
-        <AnimatePresence>
-          {open && (
-            <motion.div initial={{opacity:0,scale:0.96}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.96}} transition={{duration:0.18}}>
-              <ChatPanel
-                messages={messages}
-                onSend={sendUserMessage}
-                suggestions={SUGGESTIONS}
-                onSuggest={onSuggest}
-                onClose={()=> setOpen(false)}
-                isResponding={isResponding}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+  useEffect(()=>{
+    if(!open) return
+    function onDocumentClick(event: MouseEvent){
+      if(!rootRef.current) return
+      if(!rootRef.current.contains(event.target as Node)){
+        setOpen(false)
+      }
+    }
+    document.addEventListener('click', onDocumentClick)
+    return ()=> document.removeEventListener('click', onDocumentClick)
+  }, [open])
 
-        <div style={{position:'relative'}}>
-          <div className="c4-robot-pulse" aria-hidden="true" style={{background:'radial-gradient(circle, rgba(0,230,255,0.06), transparent 30%)'}}></div>
-          <RobotAvatar
-            onClick={()=> setOpen(s => !s)}
-            isSpeaking={isResponding}
-            headFollow={isTouchDevice ? { x: 0, y: 0 } : headFollow}
-            wave={didWave && !prefersReducedMotion && !isTouchDevice}
-            disableMotion={prefersReducedMotion || isTouchDevice}
-          />
-        </div>
-      </div>
+  const canAnimate = !prefersReducedMotion && !isTouchDevice && !isMobile
+  const floatMotion = canAnimate ? { y: isMobile ? [0, -4, 0] : [0, -10, 0] } : { y: [0, 0, 0] }
+
+  return (
+    <div ref={rootRef} className="fixed right-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-50 pointer-events-none flex flex-col items-end gap-3">
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 10 }}
+            transition={{ duration: 0.18 }}
+            className="pointer-events-auto mb-3 w-[min(92vw,360px)] h-[min(70vh,520px)] rounded-2xl"
+          >
+            <ChatPanel
+              className="h-full w-full rounded-2xl"
+              messages={messages}
+              onSend={sendUserMessage}
+              suggestions={SUGGESTIONS}
+              onSuggest={onSuggest}
+              onClose={()=> setOpen(false)}
+              isResponding={isResponding}
+              autoFocus={open}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <RobotAvatar
+        onClick={()=> setOpen(s => !s)}
+        isSpeaking={isResponding}
+        headFollow={isTouchDevice ? { x: 0, y: 0 } : headFollow}
+        wave={didWave && canAnimate}
+        disableMotion={!canAnimate}
+        floatMotion={floatMotion}
+        isTouchDevice={isTouchDevice}
+        isMobile={isMobile}
+      />
     </div>
   )
 }

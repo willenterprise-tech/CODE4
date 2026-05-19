@@ -4,16 +4,18 @@ import { X, Send } from 'lucide-react'
 
 type Msg = { id: string; from: 'user'|'bot'; text: string }
 
-export default function ChatPanel({ messages, onSend, suggestions, onSuggest, onClose, isResponding }: { messages: Msg[]; onSend: (t:string)=>void; suggestions: string[]; onSuggest: (s:string)=>void; onClose: ()=>void; isResponding?: boolean }){
+export default function ChatPanel({ messages, onSend, suggestions, onSuggest, onClose, isResponding, autoFocus, className }: { messages: Msg[]; onSend: (t:string)=>void; suggestions: string[]; onSuggest: (s:string)=>void; onClose: ()=>void; isResponding?: boolean; autoFocus?: boolean; className?: string }){
   const [val, setVal] = useState('')
   const listRef = useRef<HTMLDivElement|null>(null)
+  const inputRef = useRef<HTMLInputElement|null>(null)
 
   useEffect(()=>{ if(listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight }, [messages])
+  useEffect(()=>{ if(autoFocus && inputRef.current) inputRef.current.focus({ preventScroll: true }) }, [autoFocus])
 
   function submit(){ if(!val.trim()) return; onSend(val.trim()); setVal('') }
 
   return (
-    <div className="c4-chat-panel" role="dialog" aria-label="C4 Bot chat">
+    <div className={`c4-chat-panel ${className || ''}`} role="dialog" aria-label="C4 Bot chat" aria-modal="true">
       <div className="c4-chat-header">
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <div style={{width:36,height:36,borderRadius:8,background:'linear-gradient(90deg,#052230,#062634)',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.02)'}}>
@@ -44,7 +46,7 @@ export default function ChatPanel({ messages, onSend, suggestions, onSuggest, on
 
       <div className="c4-chat-actions">
         <div className="c4-input">
-          <input value={val} onChange={(e)=> setVal(e.target.value)} onKeyDown={(e)=> { if(e.key === 'Enter') submit() }} placeholder="Ask me something..." />
+          <input ref={inputRef} value={val} onChange={(e)=> setVal(e.target.value)} onKeyDown={(e)=> { if(e.key === 'Enter') submit() }} placeholder="Ask me something..." />
           <button className="c4-send" onClick={submit} aria-label="Send"><Send size={16} color="#022" /></button>
         </div>
       </div>

@@ -69,15 +69,13 @@ body{margin:0;font-family:'Space Grotesk', system-ui,-apple-system,'Segoe UI',Ro
 .cta-actions a{width:100%}
 
 /* Performance */
-.particles-canvas{display:none}
-.hero-bg-anim{opacity:0.6;animation:none !important;transition:none !important}
-.floater,.c4a-robot-floating,.mock-screen,.wenix-thumbs,.wenix-main{animation:none !important;transition:none !important}
+/* Keep mobile animations active while reducing background intensity. */
+.hero-bg-anim{opacity:0.72}
 
-/* When the user is actively scrolling, reduce/stop CSS animations to prevent jank */
+/* When the user is actively scrolling, reduce CSS motion for page content while preserving the assistant animations. */
 .scrolling-paused .hero-bg-anim,
 .scrolling-paused .floater,
 .scrolling-paused .particles-canvas,
-.scrolling-paused .c4a-robot-floating,
 .scrolling-paused .wenix-main,
 .scrolling-paused .mock-screen{animation:none !important;transition:none !important}
 

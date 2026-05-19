@@ -15,12 +15,8 @@ document.addEventListener('DOMContentLoaded', function(){
   const isLowEnd = isTouch && (lowMemory || fewCores || smallViewport);
   let heavyVisualsAllowed = !isLowEnd;
 
-  // If on a small touch device, disable animations by default to avoid scroll jank
-  const FORCE_DISABLE_ANIMATIONS_MAX_WIDTH = 820;
+  // Animations stay on by default unless the user manually turns them off.
   const userPrefSet = storedDisabled !== null;
-  if (isTouch && window.innerWidth <= FORCE_DISABLE_ANIMATIONS_MAX_WIDTH) {
-    animationsDisabled = true;
-  }
   if (animationsDisabled) heavyVisualsAllowed = false;
 
   const toggleBtn = document.getElementById('toggle-animations');
@@ -84,23 +80,9 @@ document.addEventListener('DOMContentLoaded', function(){
     window.addEventListener('resize', resize);
 
     function rand(min, max){ return Math.random()*(max-min)+min }
-    const deviceFactor = window.innerWidth < 720 ? 0.6 : 1;
-    const desiredCount = Math.floor(60 * deviceFactor + (width / 30));
-    const maxCount = Math.min(120, Math.max(24, desiredCount));
-
-    class Particle{
-      constructor(){
-        this.x = Math.random()*width; this.y = Math.random()*height; this.r = rand(0.6, 2.6) * deviceFactor; this.vx = rand(-0.3,0.3); this.vy = rand(-0.2,0.2); this.alpha = rand(0.04,0.18);
-      }
-      update(){ this.x += this.vx; this.y += this.vy; if(this.x < -10) this.x = width + 10; if(this.x > width + 10) this.x = -10; if(this.y < -10) this.y = height + 10; if(this.y > height + 10) this.y = -10; }
-      draw(){ ctx.beginPath(); ctx.fillStyle = 'rgba(0,229,255,' + this.alpha + ')'; ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fill(); }
-    }
-
-    for(let i=0;i<maxCount;i++) particles.push(new Particle());
-
-    function animate(){
-      ctx.clearRect(0,0,width,height);
-      for(let i=0;i<particles.length;i++){
+      const deviceFactor = window.innerWidth < 720 ? 0.35 : 0.7;
+      const desiredCount = Math.floor(40 * deviceFactor + (width / 40));
+      const maxCount = Math.min(80, Math.max(18, desiredCount));
         const p = particles[i]; p.update(); p.draw();
         for(let j=i+1;j<i+4 && j<particles.length;j++){
           const p2 = particles[j]; const dx = p.x - p2.x, dy = p.y - p2.y; const d = Math.sqrt(dx*dx + dy*dy);
@@ -397,8 +379,6 @@ document.addEventListener('DOMContentLoaded', function(){
         return;
       }
       isScrollPaused = true;
-      stopParticles();
-      stopSymbols();
       document.body.classList.add('scrolling-paused');
       scrollPauseTimer = setTimeout(resumeAfterScroll, SCROLL_PAUSE_MS);
     }
@@ -406,10 +386,6 @@ document.addEventListener('DOMContentLoaded', function(){
       if(!isScrollPaused) return;
       isScrollPaused = false;
       document.body.classList.remove('scrolling-paused');
-      if(!animationsDisabled && heavyVisualsAllowed){
-        startSymbols();
-        startParticles();
-      }
       if(scrollPauseTimer){ clearTimeout(scrollPauseTimer); scrollPauseTimer = null; }
     }
     const passiveOpts = { passive: true };
