@@ -15,10 +15,10 @@ document.addEventListener('DOMContentLoaded', function(){
   const isLowEnd = isTouch && (lowMemory || fewCores || smallViewport);
   let heavyVisualsAllowed = !isLowEnd;
 
-  // If on a small touch device, prefer disabling animations by default to avoid scroll jank
+  // If on a small touch device, disable animations by default to avoid scroll jank
   const FORCE_DISABLE_ANIMATIONS_MAX_WIDTH = 820;
   const userPrefSet = storedDisabled !== null;
-  if (isTouch && window.innerWidth <= FORCE_DISABLE_ANIMATIONS_MAX_WIDTH && !userPrefSet) {
+  if (isTouch && window.innerWidth <= FORCE_DISABLE_ANIMATIONS_MAX_WIDTH) {
     animationsDisabled = true;
   }
   if (animationsDisabled) heavyVisualsAllowed = false;

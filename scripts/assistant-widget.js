@@ -22,10 +22,11 @@
       </div>
       <div class="c4a-quick-actions">
         <button class="c4a-quick-btn">Tell me about your services</button>
-        <button class="c4a-quick-btn">What is cybersecurity?</button>
-        <button class="c4a-quick-btn">Show portfolio</button>
-        <button class="c4a-quick-btn">Contact Code4</button>
-        <button class="c4a-quick-btn">Get a quote</button>
+        <button class="c4a-quick-btn">Help me with coding</button>
+        <button class="c4a-quick-btn">Explain cybersecurity</button>
+        <button class="c4a-quick-btn">Show your portfolio</button>
+        <button class="c4a-quick-btn">Learn with Code4 Academy</button>
+        <button class="c4a-quick-btn">Just chat</button>
       </div>
       <div class="c4a-chat-messages" aria-live="polite"></div>
       <div class="c4a-input-bar">
@@ -46,7 +47,7 @@
           </g>
         </g>
       </svg>
-      <div class="c4a-bubble">Hi! I'm C4-Bot. How can I help you today?</div>
+      <div class="c4a-bubble">Hi! I'm C4-Bot 🤖. I can help you explore Code4's services, answer coding and cybersecurity questions, support your learning journey, or simply chat if you'd like.</div>
     </button>
   `
   root.className = 'c4-robot-wrap'
@@ -119,20 +120,28 @@
   }
 
   function canned(text){
-    const t = (text || '').toLowerCase();
-    if(!t) return C4_KB.quickResponses.services;
-    if(t.includes('service') || t.includes('what do you offer') || t.includes('what services') || t.includes('what do you offer')) return C4_KB.quickResponses.services;
-    if(t.includes('cyber')) return C4_KB.quickResponses.cybersecurity;
-    if(t.includes('data analysis') || t.includes('data') || t.includes('analytics')) return C4_KB.quickResponses.dataAnalysis;
-    if(t.includes('academy') || t.includes('training')) return C4_KB.quickResponses.academy;
+    const t = (text || '').toLowerCase().trim();
+    if(!t) return `Hi there! I'm C4-Bot 🤖. What would you like to talk about today?`;
+    if(/^(hi|hello|hey|hiya|yo)\b/.test(t)) return `Hi there! 👋 I'm C4-Bot. How's your day going?`;
+    if(t.includes('how are you')) return `I'm doing great and ready to help with coding, cybersecurity, project ideas, or just chat. What would you like to discuss?`;
+    if(t.includes('joke')) return `Why do programmers prefer dark mode? Because light attracts bugs. 😄`;
+    if(t.includes('bored')) return `Let's fix that! We can talk about AI, coding, cybersecurity, project ideas, or I can challenge you with a fun programming question.`;
+    if(t.includes('what can you do') || t.includes('what do you do') || t.includes('can you do')) return `I can answer questions about Code4, help with programming and cybersecurity, explain technology concepts, brainstorm project ideas, or just chat with you.`;
+    if(t.includes('help me with coding') || t.includes('learning programming') || t.includes('learning to code') || t.includes('programming') || t.includes('stuck')) return `That's awesome! 🚀 Programming is a great skill to build. Tell me what language or problem you're working on, and I'll help you through it.`;
+    if(t.includes('academy') || t.includes('training') || t.includes('course') || t.includes('learn')) return `Code4 Academy offers hands-on learning for coding, AI, and data analysis. What are you most interested in learning right now?`;
+    if(t.includes('cyber') || t.includes('security')) return `Cybersecurity is all about keeping systems safe. Code4 can help with secure architecture, testing, and monitoring, and I can explain any concept you want.`;
+    if(t.includes('ai')) return `AI is exciting! It can power chatbots, business tools, and smarter software. If you'd like, I can explain how AI works or how Code4 uses it for solutions.`;
+    if(t.includes('website') || t.includes('app') || t.includes('build') || t.includes('project idea') || t.includes('project')) return `If you want to build a website or app, Code4 can design and develop a secure solution for your needs. Tell me more about your idea and I can help you shape it.`;
+    if(t.includes('tell me about your services') || t.includes('service') || t.includes('what services')) return C4_KB.quickResponses.services;
     if(t.includes('portfolio') || t.includes('projects') || t.includes('work')) return C4_KB.quickResponses.portfolio;
     if(t.includes('contact') || t.includes('email') || t.includes('reach')) return C4_KB.quickResponses.contact;
-    if(t.includes('how much') || t.includes('cost') || t.includes('price')) return C4_KB.faqs.cost;
+    if(t.includes('how much') || t.includes('cost') || t.includes('price') || t.includes('quote')) return C4_KB.faqs.cost;
     if(t.includes('how long') || t.includes('timeline') || t.includes('time')) return C4_KB.faqs.timeline;
-    if(t.includes('industr') || t.includes('industry')) return 'We serve: ' + C4_KB.industries.join(', ');
+    if(t.includes('data analysis') || t.includes('data') || t.includes('analytics')) return C4_KB.quickResponses.dataAnalysis;
     if(t.includes('about') || t.includes('who are you') || t.includes('company')) return C4_KB.description;
+    if(t.includes('friendly') || t.includes('chat') || t.includes('talk')) return `I'm always happy to chat. 😊 Whether it's tech, learning, or just a fun topic, I'm here for it.`;
     for(const k in C4_KB.faqs){ if(t.includes(k)) return C4_KB.faqs[k]; }
-    return `I'm sorry — I don't want to guess. Please email us at ${C4_KB.email} or visit ${C4_KB.website} for detailed help.`
+    return `I'm here to help with technology, learning, or your next project. What would you like to talk about?`;
   }
 
   // initial bubble show then auto-hide
