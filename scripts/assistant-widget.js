@@ -1,6 +1,13 @@
 /* C4 Assistant embeddable widget (vanilla JS) */
 (function(){
   const rootId = 'c4-assistant'
+  // If on a narrow/mobile viewport, do not inject the embeddable assistant
+  const isMobileView = (typeof window !== 'undefined') && (window.matchMedia ? window.matchMedia('(max-width:768px)').matches : window.innerWidth <= 768)
+  if (isMobileView) {
+    const existing = document.getElementById(rootId)
+    if (existing) existing.remove()
+    return
+  }
   if(document.getElementById(rootId)) return
 
   // create root
@@ -71,12 +78,11 @@
     offsetX: 0,
     offsetY: 0,
     moved: false,
-    active: false,
-    longPressTimer: null
+    active: false
   }
   let suppressClick = false
-  const DRAG_THRESHOLD = 8
-  const LONG_PRESS_MS = 220
+  const DRAG_THRESHOLD = 18
+  // touch long-press removed to avoid blocking vertical scroll; require stronger horizontal gesture
 
   function prepareForDrag(clientX, clientY){
     const rect = btn.getBoundingClientRect()
@@ -100,22 +106,13 @@
     dragState.offsetX = e.clientX - rect.left
     dragState.offsetY = e.clientY - rect.top
     dragState.moved = false
-    dragState.active = false
 
-    // On touch allow long-press to pick up the bot (for vertical drags too)
-    if (e.pointerType === 'touch'){
-      dragState.longPressTimer = setTimeout(()=>{
-        if (!dragState.moved){
-          dragState.active = true
-          btn.classList.add('dragging')
-          prepareForDrag(e.clientX, e.clientY)
-        }
-      }, LONG_PRESS_MS)
-    } else {
-      // mouse/pen: start dragging immediately
+    // For mouse/pen start dragging immediately, for touch wait to detect horizontal swipe
+    if (e.pointerType !== 'touch'){
       dragState.active = true
       btn.classList.add('dragging')
       prepareForDrag(e.clientX, e.clientY)
+      try { btn.setPointerCapture && btn.setPointerCapture(e.pointerId) } catch (err) { /* ignore */ }
       e.preventDefault()
     }
 
@@ -129,22 +126,21 @@
     const dx = e.clientX - dragState.startX
     const dy = e.clientY - dragState.startY
 
-    if (!dragState.moved && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)){
+    // wait until user has moved enough in either direction before deciding
+    if (!dragState.moved) {
+      if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return
       dragState.moved = true
-      // if not active yet (touch), decide whether this is a horizontal drag or a scroll
-      if (!dragState.active){
-        if (e.pointerType === 'touch'){
-          if (Math.abs(dx) > Math.abs(dy)){
-            // horizontal-dominant -> start dragging
-            dragState.active = true
-            btn.classList.add('dragging')
-            if (dragState.longPressTimer){ clearTimeout(dragState.longPressTimer); dragState.longPressTimer = null }
-            prepareForDrag(e.clientX, e.clientY)
-          } else {
-            // vertical-dominant -> abort dragging and allow page scroll
-            cleanupPointerListeners()
-            return
-          }
+      // If this is a touch, only start dragging for a clear horizontal gesture
+      if (!dragState.active && e.pointerType === 'touch'){
+        if (Math.abs(dx) > Math.abs(dy) * 1.6 && Math.abs(dx) > DRAG_THRESHOLD){
+          dragState.active = true
+          btn.classList.add('dragging')
+          try { btn.setPointerCapture && btn.setPointerCapture(e.pointerId) } catch (err) { /* ignore */ }
+          prepareForDrag(e.clientX, e.clientY)
+        } else {
+          // vertical-dominant or ambiguous gesture -> allow page scroll
+          cleanupPointerListeners()
+          return
         }
       }
     }
@@ -168,11 +164,11 @@
   }
 
   function onPointerUp(e){
-    if (dragState.longPressTimer){ clearTimeout(dragState.longPressTimer); dragState.longPressTimer = null }
     if (dragState.pointerId !== e.pointerId){ cleanupPointerListeners(); return }
     if (dragState.active){
       // finish drag
       btn.classList.remove('dragging')
+      try { btn.releasePointerCapture && btn.releasePointerCapture(e.pointerId) } catch (err) { /* ignore */ }
       // leave the inline left/top so position persists visually
       // briefly suppress the following click that pointerup may trigger
       suppressClick = true
@@ -185,7 +181,6 @@
     try { document.removeEventListener('pointermove', onPointerMove) } catch(err){}
     try { document.removeEventListener('pointerup', onPointerUp) } catch(err){}
     try { document.removeEventListener('pointercancel', onPointerUp) } catch(err){}
-    if (dragState.longPressTimer){ clearTimeout(dragState.longPressTimer); dragState.longPressTimer = null }
     dragState.pointerId = null
     dragState.active = false
     dragState.moved = false
@@ -193,6 +188,77 @@
 
   // attach pointerdown for drag behavior
   btn.addEventListener('pointerdown', onPointerDown)
+
+  // Touch fallback for browsers that don't support Pointer Events (iOS Safari older versions)
+  if (typeof window.PointerEvent === 'undefined'){
+    let touchDrag = { startX: 0, startY: 0, offsetX: 0, offsetY: 0, moved: false, active: false }
+
+    function onTouchStart(ev){
+      if(!ev.touches || ev.touches.length !== 1) return
+      const t = ev.touches[0]
+      touchDrag.startX = t.clientX
+      touchDrag.startY = t.clientY
+      const rect = btn.getBoundingClientRect()
+      touchDrag.offsetX = t.clientX - rect.left
+      touchDrag.offsetY = t.clientY - rect.top
+      touchDrag.moved = false
+      touchDrag.active = false
+    }
+
+    function onTouchMove(ev){
+      if(!ev.touches || ev.touches.length !== 1) return
+      const t = ev.touches[0]
+      const dx = t.clientX - touchDrag.startX
+      const dy = t.clientY - touchDrag.startY
+
+      if(!touchDrag.moved){
+        if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return
+        touchDrag.moved = true
+        if(Math.abs(dx) > Math.abs(dy) * 1.6 && Math.abs(dx) > DRAG_THRESHOLD){
+          // horizontal: start drag
+          touchDrag.active = true
+          btn.classList.add('dragging')
+          prepareForDrag(t.clientX, t.clientY)
+          // prevent default to avoid the browser stealing the gesture
+          ev.preventDefault()
+        } else {
+          // vertical or ambiguous: allow page scroll
+          return
+        }
+      }
+
+      if(touchDrag.active){
+        ev.preventDefault()
+        const left = t.clientX - touchDrag.offsetX
+        const top = t.clientY - touchDrag.offsetY
+        const vw = window.innerWidth
+        const vh = window.innerHeight
+        const rect = btn.getBoundingClientRect()
+        const w = rect.width
+        const h = rect.height
+        const clampedLeft = Math.max(8, Math.min(left, vw - w - 8))
+        const clampedTop = Math.max(8, Math.min(top, vh - h - 8))
+        btn.style.left = clampedLeft + 'px'
+        btn.style.top = clampedTop + 'px'
+        suppressClick = true
+      }
+    }
+
+    function onTouchEnd(ev){
+      if(touchDrag.active){
+        btn.classList.remove('dragging')
+        suppressClick = true
+        setTimeout(()=> { suppressClick = false }, 50)
+      }
+      touchDrag.moved = false
+      touchDrag.active = false
+    }
+
+    btn.addEventListener('touchstart', onTouchStart, { passive: true })
+    btn.addEventListener('touchmove', onTouchMove, { passive: false })
+    btn.addEventListener('touchend', onTouchEnd)
+    btn.addEventListener('touchcancel', onTouchEnd)
+  }
 
   // helper to add message
   function addMessage(from, text){
@@ -288,7 +354,11 @@
   function openPanel(){ panel.hidden = false; panel.classList.add('show'); panel.querySelector('[data-c4-close]').focus(); }
   function closePanel(){ panel.classList.remove('show'); setTimeout(()=> panel.hidden = true, 220) }
 
-  btn.addEventListener('click', (e)=>{ e.stopPropagation(); if(panel.hidden) openPanel(); else closePanel(); })
+  btn.addEventListener('click', (e)=>{ 
+    if(suppressClick){ e.stopPropagation(); e.preventDefault(); suppressClick = false; return }
+    e.stopPropagation(); 
+    if(panel.hidden) openPanel(); else closePanel(); 
+  })
   root.querySelector('[data-c4-close]').addEventListener('click', closePanel)
 
   // quick actions
