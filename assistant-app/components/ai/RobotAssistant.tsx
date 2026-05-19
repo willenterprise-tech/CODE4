@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import RobotAvatar from './RobotAvatar'
 import ChatPanel from './ChatPanel'
 
@@ -19,8 +19,6 @@ export default function RobotAssistant(){
   const [messages, setMessages] = useState<Message[]>([{ id: 'welcome', from: 'bot', text: "Hi! I'm C4-Bot. How can I help you today?" }])
   const [isResponding, setResponding] = useState(false)
   const [headFollow, setHeadFollow] = useState({ x: 0, y: 0 })
-  const [isTouchDevice, setIsTouchDevice] = useState(false)
-  const prefersReducedMotion = useReducedMotion()
 
   // simple response mapping
   // Knowledge base
@@ -72,15 +70,6 @@ export default function RobotAssistant(){
 
   // follow cursor mildly
   useEffect(()=>{
-    const media = window.matchMedia('(pointer: coarse)')
-    setIsTouchDevice(media.matches)
-    const handleChange = () => setIsTouchDevice(media.matches)
-    media.addEventListener?.('change', handleChange)
-    return ()=> media.removeEventListener?.('change', handleChange)
-  }, [])
-
-  useEffect(()=>{
-    if(prefersReducedMotion || isTouchDevice) return
     function onMove(e: MouseEvent){
       const x = (e.clientX / window.innerWidth) * 2 - 1
       const y = (e.clientY / window.innerHeight) * 2 - 1
@@ -88,7 +77,7 @@ export default function RobotAssistant(){
     }
     window.addEventListener('mousemove', onMove)
     return ()=> window.removeEventListener('mousemove', onMove)
-  }, [prefersReducedMotion, isTouchDevice])
+  }, [])
 
   // wave once on load
   const [didWave, setDidWave] = useState(false)
@@ -113,13 +102,12 @@ export default function RobotAssistant(){
         </AnimatePresence>
 
         <div style={{position:'relative'}}>
-          <div className="c4-robot-pulse" aria-hidden="true" style={{background:'radial-gradient(circle, rgba(0,230,255,0.06), transparent 30%)'}}></div>
+          <div className="c4-robot-pulse" aria-hidden="true" style={{background:'radial-gradient(circle, rgba(0,230,255,0.06), transparent 30%)', animation:'pulse 2.8s infinite'}}></div>
           <RobotAvatar
             onClick={()=> setOpen(s => !s)}
             isSpeaking={isResponding}
-            headFollow={isTouchDevice ? { x: 0, y: 0 } : headFollow}
-            wave={didWave && !prefersReducedMotion && !isTouchDevice}
-            disableMotion={prefersReducedMotion || isTouchDevice}
+            headFollow={headFollow}
+            wave={didWave}
           />
         </div>
       </div>

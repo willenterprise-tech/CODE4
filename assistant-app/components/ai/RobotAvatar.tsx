@@ -1,15 +1,13 @@
 "use client"
-import React, { useEffect, useState } from 'react'
-import { motion, useAnimation, useReducedMotion } from 'framer-motion'
+import React, { useEffect, useMemo, useState } from 'react'
+import { motion, useAnimation } from 'framer-motion'
 
-export default function RobotAvatar({ onClick, isSpeaking, headFollow, wave, disableMotion }: { onClick?: () => void; isSpeaking?: boolean; headFollow?: { x:number; y:number }; wave?: boolean; disableMotion?: boolean }){
+export default function RobotAvatar({ onClick, isSpeaking, headFollow, wave }: { onClick?: () => void; isSpeaking?: boolean; headFollow?: { x:number; y:number }; wave?: boolean }){
   const [blink, setBlink] = useState(false)
   const controls = useAnimation()
-  const prefersReducedMotion = useReducedMotion()
 
   useEffect(()=>{
     // random blinking
-    if(prefersReducedMotion) return
     let mounted = true
     function tick(){
       if(!mounted) return
@@ -18,7 +16,7 @@ export default function RobotAvatar({ onClick, isSpeaking, headFollow, wave, dis
     }
     tick()
     return ()=> { mounted = false }
-  }, [prefersReducedMotion])
+  }, [])
 
   useEffect(()=>{
     if(isSpeaking) controls.start({ scale: 1.03 })
@@ -26,14 +24,13 @@ export default function RobotAvatar({ onClick, isSpeaking, headFollow, wave, dis
   }, [isSpeaking, controls])
 
   // wave on mount via small rotation animation of the "arm"
-  const canAnimate = !disableMotion && !prefersReducedMotion
-  const armAnim = canAnimate && wave ? { rotate: [0, -18, 12, -6, 0], transition: { duration: 1.3 } } : { rotate: 0 }
+  const armAnim = wave ? { rotate: [0, -18, 12, -6, 0], transition: { duration: 1.3 } } : { rotate: 0 }
 
   const eyeOffsetX = (headFollow?.x ?? 0) * 6
   const eyeOffsetY = (headFollow?.y ?? 0) * 4
 
   return (
-    <motion.button aria-label="Open chat" title="Open chat" onClick={onClick} className="c4-robot-btn" whileHover={canAnimate ? { scale: 1.03 } : undefined} animate={controls}>
+    <motion.button aria-label="Open chat" title="Open chat" onClick={onClick} className="c4-robot-btn" whileHover={{ scale: 1.03 }} animate={controls}>
       <span className="c4-robot-halo" aria-hidden="true"></span>
       <motion.svg className="c4-robot-floating" width="84" height="84" viewBox="0 0 84 84" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>

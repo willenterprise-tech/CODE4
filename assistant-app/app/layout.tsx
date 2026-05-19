@@ -1,10 +1,5 @@
-import dynamic from 'next/dynamic'
-import '../styles/globals.css'
-
-const RobotAssistant = dynamic(() => import('../components/ai/RobotAssistant'), {
-  ssr: false,
-  loading: () => null,
-})
+import './globals.css'
+import RobotAssistant from '../components/ai/RobotAssistant'
 
 export const metadata = {
   title: 'Assistant Demo',
