@@ -393,5 +393,47 @@ document.addEventListener('DOMContentLoaded', function(){
     document.addEventListener('visibilitychange', noOp);
   })();
 
+  // Back-to-top button: appears only when the user scrolled to the bottom of the page
+  (function(){
+    const THRESHOLD_PX = 8;
+    const btn = document.createElement('button');
+    btn.id = 'back-to-top';
+    btn.className = 'back-to-top';
+    btn.setAttribute('aria-label', 'Back to top');
+    btn.innerHTML = '&#8679;';
+    btn.type = 'button';
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      btn.blur();
+      var scroller = document.scrollingElement || document.documentElement || document.body;
+      // try smooth scroll, fallback to immediate if not supported or if it fails
+      try{
+        if('scrollBehavior' in document.documentElement.style){
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          scroller.scrollTop = 0;
+        }
+      }catch(err){
+        scroller.scrollTop = 0;
+      }
+    });
+    btn.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); btn.click(); } });
+    document.body.appendChild(btn);
+
+    function checkAtBottom(){
+      const docEl = document.documentElement;
+      const scrollTop = window.pageYOffset || docEl.scrollTop || document.body.scrollTop || 0;
+      const winH = window.innerHeight || docEl.clientHeight;
+      const atBottom = (docEl.scrollHeight - (scrollTop + winH)) <= THRESHOLD_PX;
+      btn.classList.toggle('visible', atBottom);
+    }
+    checkAtBottom();
+    window.addEventListener('scroll', checkAtBottom, { passive: true });
+    window.addEventListener('resize', checkAtBottom);
+    if(window.ResizeObserver){
+      try{ const ro = new ResizeObserver(checkAtBottom); ro.observe(document.body); } catch(e){ /* ignore */ }
+    }
+  })();
 
 });

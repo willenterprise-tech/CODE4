@@ -88,6 +88,36 @@ body{margin:0;font-family:'Space Grotesk',system-ui,-apple-system,Segoe UI,Robot
 .projects-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1rem}
 .project-card{background:rgba(255,255,255,0.02);padding:1rem;border-radius:12px}
 .proj-img{height:120px;background:linear-gradient(90deg,rgba(0,102,255,0.06),rgba(0,225,255,0.04));border-radius:8px;margin-bottom:0.6rem}
+/* Back-to-top button (appears when scrolled to bottom) */
+.back-to-top{
+  position:fixed;
+  right:24px;
+  /* keep the button clear of the assistant (assistant bottom 24px + robot height 84px + gap 12px) */
+  bottom:calc(24px + 84px + 12px);
+  width:48px;
+  height:48px;
+  border-radius:999px;
+  background:linear-gradient(180deg,var(--cyan),var(--primary));
+  color:#021;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 10px 30px rgba(2,8,20,0.6);
+  border:none;
+  cursor:pointer;
+  z-index:100001;
+  opacity:0;
+  transform:translateY(8px);
+  transition:opacity .18s ease, transform .18s ease;
+  pointer-events:none;
+  font-size:1.15rem;
+}
+.back-to-top.visible{opacity:1;transform:translateY(0);pointer-events:auto}
+.back-to-top:focus{outline:3px solid rgba(0,229,255,0.12);outline-offset:3px}
+@media (max-width:768px){
+  /* mobile: account for smaller robot button sizes and safe gutters */
+  .back-to-top{right:12px;bottom:calc(16px + 64px + 12px);width:44px;height:44px;font-size:1rem}
+}
 
 /* Timeline */
 .timeline{display:flex;gap:1rem;list-style:none;padding:0;margin:1rem 0}

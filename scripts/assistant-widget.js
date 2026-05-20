@@ -1,14 +1,12 @@
 /* C4 Assistant embeddable widget (vanilla JS) */
 (function(){
   const rootId = 'c4-assistant'
-  // Only inject the assistant on desktop viewports. Do not load on mobile/tablet.
-  const isDesktop = (typeof window !== 'undefined') && (window.matchMedia ? window.matchMedia('(min-width:769px)').matches : window.innerWidth > 768)
-  if (!isDesktop) {
-    const existing = document.getElementById(rootId)
-    if (existing) existing.remove()
-    return
-  }
-  if(document.getElementById(rootId)) return
+  // Do not inject the assistant on small viewports (mobile).
+  // This prevents loading UI and event listeners that interfere on phones.
+  let isMobileViewport = false
+  try { isMobileViewport = !!(window && window.matchMedia && window.matchMedia('(max-width:768px)').matches) } catch(e) { isMobileViewport = false }
+  if (isMobileViewport) return
+  if (document.getElementById(rootId)) return
 
   // create root
   const root = document.createElement('div')
@@ -67,8 +65,9 @@
   const input = root.querySelector('.c4a-input input')
   const sendBtn = root.querySelector('.c4a-send')
 
-  // allow vertical page scroll by default but permit horizontal drag gestures
-  try { btn.style.touchAction = btn.style.touchAction || 'pan-y'; } catch (err) { /* ignore */ }
+  // touch-action: left to CSS for default; mobile CSS may set `none` so
+  // the element captures gestures reliably. We avoid forcing inline
+  // touch-action here so stylesheet rules can take precedence.
   try { btn.style.zIndex = btn.style.zIndex || '100000'; } catch (err) { /* ignore */ }
 
   // Dragging state for the floating bot
@@ -82,20 +81,74 @@
     active: false
   }
   let suppressClick = false
-  const DRAG_THRESHOLD = 18
+  const DRAG_THRESHOLD = 10
   // touch long-press removed to avoid blocking vertical scroll; require stronger horizontal gesture
 
   function prepareForDrag(clientX, clientY){
     const rect = btn.getBoundingClientRect()
     // switch to fixed left/top positioning so we can move freely
-    btn.style.position = 'fixed'
-    btn.style.left = rect.left + 'px'
-    btn.style.top = rect.top + 'px'
-    btn.style.right = 'auto'
-    btn.style.bottom = 'auto'
-    btn.style.transform = 'none'
+    // use setProperty with priority to override any !important mobile rules
+    btn.style.setProperty('position', 'fixed', 'important')
+    btn.style.setProperty('right', 'auto', 'important')
+    btn.style.setProperty('bottom', 'auto', 'important')
+    btn.style.setProperty('left', rect.left + 'px', 'important')
+    btn.style.setProperty('top', rect.top + 'px', 'important')
+    btn.style.setProperty('transform', 'none', 'important')
+    // mark initial anchor for transform-based dragging
+    dragState.initialLeft = rect.left
+    dragState.initialTop = rect.top
+    dragState.lastDx = 0
+    dragState.lastDy = 0
+    try { btn.style.setProperty('will-change', 'transform', 'important') } catch(_){}
     btn.style.zIndex = '2147483647'
   }
+
+  // persist / restore position so mobile/desktop keep the last user placement
+  function persistPosition(left, top){
+    try{ localStorage.setItem('c4_assistant_pos', Math.round(left) + ',' + Math.round(top)) } catch(e){}
+  }
+
+  function restorePosition(){
+    try{
+      const val = localStorage.getItem('c4_assistant_pos')
+      if(!val) return
+      const parts = val.split(',')
+      if(parts.length !== 2) return
+      const l = Number(parts[0])
+      const t = Number(parts[1])
+      if(isNaN(l) || isNaN(t)) return
+      // apply fixed inline position
+      btn.style.setProperty('position','fixed','important')
+      btn.style.setProperty('right','auto','important')
+      btn.style.setProperty('bottom','auto','important')
+      btn.style.setProperty('left', l + 'px','important')
+      btn.style.setProperty('top', t + 'px','important')
+      btn.style.setProperty('transform','none','important')
+    } catch(e){}
+  }
+
+  // ensure stored position stays inside viewport on resize
+  window.addEventListener('resize', ()=>{
+    try{
+      const val = localStorage.getItem('c4_assistant_pos')
+      if(!val) return
+      const [l,t] = val.split(',').map(Number)
+      if(isNaN(l) || isNaN(t)) return
+      const vw = window.innerWidth, vh = window.innerHeight
+      const rect = btn.getBoundingClientRect()
+      const w = rect.width || 84, h = rect.height || 84
+      const clampedLeft = Math.max(8, Math.min(l, vw - w - 8))
+      const clampedTop = Math.max(8, Math.min(t, vh - h - 8))
+      if(clampedLeft !== l || clampedTop !== t){
+        persistPosition(clampedLeft, clampedTop)
+        btn.style.setProperty('left', clampedLeft + 'px','important')
+        btn.style.setProperty('top', clampedTop + 'px','important')
+      }
+    } catch(_){}
+  })
+
+  // restore on init
+  restorePosition()
 
   function onPointerDown(e){
     // only react to primary buttons/touches
@@ -108,44 +161,71 @@
     dragState.offsetY = e.clientY - rect.top
     dragState.moved = false
     dragState.active = false
+    // remember input type so we can treat touch vs mouse differently
+    try { dragState.inputType = e.pointerType || 'mouse' } catch(_) { dragState.inputType = 'mouse' }
 
-    document.addEventListener('pointermove', onPointerMove)
-    document.addEventListener('pointerup', onPointerUp)
-    document.addEventListener('pointercancel', onPointerUp)
+    // attach pointer listeners; ensure pointermove is non-passive so we can
+    // call preventDefault() when a drag is active (needed on mobile)
+    try { btn.setPointerCapture && btn.setPointerCapture(e.pointerId) } catch(_){ }
+    try { document.addEventListener('pointermove', onPointerMove, { passive: false }) } catch(err){ document.addEventListener('pointermove', onPointerMove) }
+    try { document.addEventListener('pointerup', onPointerUp, { passive: true }) } catch(err){ document.addEventListener('pointerup', onPointerUp) }
+    try { document.addEventListener('pointercancel', onPointerUp, { passive: true }) } catch(err){ document.addEventListener('pointercancel', onPointerUp) }
   }
 
   function onPointerMove(e){
     if (dragState.pointerId !== e.pointerId) return
     const dx = e.clientX - dragState.startX
     const dy = e.clientY - dragState.startY
-
-    // wait until user has moved enough in either direction before deciding
+    // wait until user has moved enough before deciding; require a mostly-horizontal
+    // gesture to begin dragging so vertical swipes still scroll the page.
     if (!dragState.moved) {
       if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return
+      // mark that movement has started
       dragState.moved = true
-      if (!dragState.active){
-        // start dragging when a meaningful move begins
+      // if this is a touch input, require a mostly-horizontal gesture to begin
+      const isTouch = dragState.inputType === 'touch' || dragState.inputType === 'pen'
+      if (isTouch){
+        const isHorizontal = Math.abs(dx) > Math.abs(dy) * 1.2 && Math.abs(dx) > DRAG_THRESHOLD
+        if (isHorizontal && !dragState.active){
+          // start dragging on a deliberate horizontal gesture
+          dragState.active = true
+          btn.classList.add('dragging')
+          try { btn.setPointerCapture && btn.setPointerCapture(e.pointerId) } catch (err) { /* ignore */ }
+          prepareForDrag(e.clientX, e.clientY)
+          try { btn.style.setProperty('touch-action', 'none', 'important') } catch(_){ }
+        } else {
+          // vertical or ambiguous gesture: don't start drag and allow native scrolling
+          return
+        }
+      } else {
+        // mouse or other non-touch pointers: start dragging once threshold passed
         dragState.active = true
         btn.classList.add('dragging')
         try { btn.setPointerCapture && btn.setPointerCapture(e.pointerId) } catch (err) { /* ignore */ }
         prepareForDrag(e.clientX, e.clientY)
+        try { btn.style.setProperty('touch-action', 'none', 'important') } catch(_){ }
+        try { e.preventDefault && e.preventDefault() } catch(_){ }
       }
     }
 
-    if (dragState.active){
+    if (dragState.active) {
       // prevent page scroll while actively dragging
       e.preventDefault()
-      const left = e.clientX - dragState.offsetX
-      const top = e.clientY - dragState.offsetY
+      const leftTarget = e.clientX - dragState.offsetX
+      const topTarget = e.clientY - dragState.offsetY
       const vw = window.innerWidth
       const vh = window.innerHeight
       const rect = btn.getBoundingClientRect()
       const w = rect.width
       const h = rect.height
-      const clampedLeft = Math.max(8, Math.min(left, vw - w - 8))
-      const clampedTop = Math.max(8, Math.min(top, vh - h - 8))
-      btn.style.left = clampedLeft + 'px'
-      btn.style.top = clampedTop + 'px'
+      const clampedLeft = Math.max(8, Math.min(leftTarget, vw - w - 8))
+      const clampedTop = Math.max(8, Math.min(topTarget, vh - h - 8))
+      const dx = clampedLeft - (dragState.initialLeft || 0)
+      const dy = clampedTop - (dragState.initialTop || 0)
+      dragState.lastDx = dx
+      dragState.lastDy = dy
+      // move visually via transform for smooth GPU-accelerated motion
+      btn.style.setProperty('transform', 'translate3d(' + dx + 'px,' + dy + 'px,0)', 'important')
       suppressClick = true
     }
   }
@@ -156,6 +236,14 @@
       // finish drag
       btn.classList.remove('dragging')
       try { btn.releasePointerCapture && btn.releasePointerCapture(e.pointerId) } catch (err) { /* ignore */ }
+      // compute final absolute position and persist it (remove transform)
+      const finalLeft = Math.round((dragState.initialLeft || 0) + (dragState.lastDx || 0))
+      const finalTop = Math.round((dragState.initialTop || 0) + (dragState.lastDy || 0))
+      try { btn.style.setProperty('transform', 'none', 'important') } catch(_){}
+      try { btn.style.setProperty('left', finalLeft + 'px', 'important') } catch(_){}
+      try { btn.style.setProperty('top', finalTop + 'px', 'important') } catch(_){}
+      try { btn.style.removeProperty('touch-action') } catch(_){ }
+      try { persistPosition(finalLeft, finalTop) } catch(_){ }
       // leave the inline left/top so position persists visually
       // briefly suppress the following click that pointerup may trigger
       suppressClick = true
@@ -168,13 +256,14 @@
     try { document.removeEventListener('pointermove', onPointerMove) } catch(err){}
     try { document.removeEventListener('pointerup', onPointerUp) } catch(err){}
     try { document.removeEventListener('pointercancel', onPointerUp) } catch(err){}
+    try { btn.style.removeProperty('touch-action') } catch(_){ }
     dragState.pointerId = null
     dragState.active = false
     dragState.moved = false
   }
 
-  // attach pointerdown for drag behavior
-  btn.addEventListener('pointerdown', onPointerDown)
+  // attach pointerdown for drag behavior (non-passive where supported)
+  try { btn.addEventListener('pointerdown', onPointerDown, { passive: false }) } catch(e){ btn.addEventListener('pointerdown', onPointerDown) }
 
   // Touch fallback for browsers that don't support Pointer Events (iOS Safari older versions)
   if (typeof window.PointerEvent === 'undefined'){
@@ -201,11 +290,12 @@
       if(!touchDrag.moved){
         if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return
         touchDrag.moved = true
-        if(Math.abs(dx) > Math.abs(dy) * 1.6 && Math.abs(dx) > DRAG_THRESHOLD){
+          if(Math.abs(dx) > Math.abs(dy) * 1.2 && Math.abs(dx) > DRAG_THRESHOLD){
           // horizontal: start drag
           touchDrag.active = true
           btn.classList.add('dragging')
           prepareForDrag(t.clientX, t.clientY)
+            try { btn.style.setProperty('touch-action', 'none', 'important') } catch(_){ }
           // prevent default to avoid the browser stealing the gesture
           ev.preventDefault()
         } else {
@@ -216,27 +306,38 @@
 
       if(touchDrag.active){
         ev.preventDefault()
-        const left = t.clientX - touchDrag.offsetX
-        const top = t.clientY - touchDrag.offsetY
+        const leftTarget = t.clientX - touchDrag.offsetX
+        const topTarget = t.clientY - touchDrag.offsetY
         const vw = window.innerWidth
         const vh = window.innerHeight
         const rect = btn.getBoundingClientRect()
         const w = rect.width
         const h = rect.height
-        const clampedLeft = Math.max(8, Math.min(left, vw - w - 8))
-        const clampedTop = Math.max(8, Math.min(top, vh - h - 8))
-        btn.style.left = clampedLeft + 'px'
-        btn.style.top = clampedTop + 'px'
+        const clampedLeft = Math.max(8, Math.min(leftTarget, vw - w - 8))
+        const clampedTop = Math.max(8, Math.min(topTarget, vh - h - 8))
+        const dx2 = clampedLeft - (dragState.initialLeft || 0)
+        const dy2 = clampedTop - (dragState.initialTop || 0)
+        dragState.lastDx = dx2
+        dragState.lastDy = dy2
+        btn.style.setProperty('transform', 'translate3d(' + dx2 + 'px,' + dy2 + 'px,0)', 'important')
         suppressClick = true
       }
     }
 
     function onTouchEnd(ev){
       if(touchDrag.active){
-        btn.classList.remove('dragging')
-        suppressClick = true
-        setTimeout(()=> { suppressClick = false }, 50)
-      }
+          btn.classList.remove('dragging')
+          // persist final position
+          const finalLeftT = Math.round((dragState.initialLeft || 0) + (dragState.lastDx || 0))
+          const finalTopT = Math.round((dragState.initialTop || 0) + (dragState.lastDy || 0))
+          try { btn.style.setProperty('transform', 'none', 'important') } catch(_){}
+          try { btn.style.setProperty('left', finalLeftT + 'px', 'important') } catch(_){}
+          try { btn.style.setProperty('top', finalTopT + 'px', 'important') } catch(_){}
+          try { btn.style.removeProperty('touch-action') } catch(_){ }
+          try { persistPosition(finalLeftT, finalTopT) } catch(_){ }
+          suppressClick = true
+          setTimeout(()=> { suppressClick = false }, 50)
+        }
       touchDrag.moved = false
       touchDrag.active = false
     }
@@ -373,6 +474,28 @@
 
   // accessibility: close on outside click
   document.addEventListener('click', (ev)=>{ if(!root.contains(ev.target)){ if(!panel.hidden) closePanel() } })
+
+  // Optional on-screen debug overlay (enable with ?c4debug=1 or
+  // localStorage.setItem('c4_assistant_debug','1')) — useful for testing on mobile
+  try {
+    const debugEnabled = (location.search || '').indexOf('c4debug=1') > -1 || localStorage.getItem('c4_assistant_debug') === '1'
+    if(debugEnabled){
+      const dbg = document.createElement('div')
+      dbg.id = 'c4-debug-overlay'
+      dbg.style.cssText = 'position:fixed;left:8px;top:8px;z-index:2147483650;background:rgba(0,0,0,0.6);color:#0ff;padding:8px 10px;border-radius:8px;font-family:monospace;font-size:12px;max-width:48vw;pointer-events:none;opacity:0.95'
+      document.body.appendChild(dbg)
+      let tId = 0
+      function showDebug(msg){ if(!dbg) return; dbg.textContent = msg; clearTimeout(tId); tId = setTimeout(()=> dbg.textContent = '', 2500) }
+      // pointer events
+      btn.addEventListener('pointerdown', (e)=> showDebug('pointerdown '+ (e.pointerType||'') + ' @' + e.clientX + ',' + e.clientY))
+      document.addEventListener('pointermove', (e)=> showDebug('pointermove '+ (e.pointerType||'') + ' @' + e.clientX + ',' + e.clientY))
+      document.addEventListener('pointerup', (e)=> showDebug('pointerup '+ (e.pointerType||'') + ' @' + e.clientX + ',' + e.clientY))
+      // touch fallback
+      btn.addEventListener('touchstart', (e)=> { const t = e.touches && e.touches[0]; if(t) showDebug('touchstart @' + t.clientX + ',' + t.clientY) }, { passive: true })
+      document.addEventListener('touchmove', (e)=> { const t = e.touches && e.touches[0]; if(t) showDebug('touchmove @' + t.clientX + ',' + t.clientY) }, { passive: true })
+      document.addEventListener('touchend', (e)=> showDebug('touchend'))
+    }
+  } catch(_){}
 
   // expose for debugging
   window.C4Assistant = { root }
