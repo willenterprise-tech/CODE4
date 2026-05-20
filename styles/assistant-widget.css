@@ -157,3 +157,12 @@
   .c4a-send{padding:6px}
   .c4a-bubble{display:none}
 }
+
+/* Forcefully hide the assistant on mobile/tablet screens so it appears only on desktop */
+@media (max-width:768px){
+  #c4-assistant, .c4a-robot-btn, .c4a-panel{
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+}

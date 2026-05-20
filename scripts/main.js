@@ -380,41 +380,17 @@ document.addEventListener('DOMContentLoaded', function(){
     window.addEventListener('resize', function(){ if(window.innerWidth > 720 && navMenu.classList.contains('open')) closeMobileNav(); });
   }
 
-  // Pause heavy visuals while the user is actively scrolling to avoid input jank on mobile/touch devices
+  // Keep heavy visuals active at all times, including during scrolling on desktop and mobile.
+  // The previous scroll pause logic was intentionally removed to satisfy the always-on animation requirement.
   (function(){
-    let scrollPauseTimer = null;
-    let isScrollPaused = false;
-    const SCROLL_PAUSE_MS = 300;
-    function pauseForScroll(){
-      if(animationsDisabled) return;
-      if(isScrollPaused){
-        clearTimeout(scrollPauseTimer);
-        scrollPauseTimer = setTimeout(resumeAfterScroll, SCROLL_PAUSE_MS);
-        return;
-      }
-      isScrollPaused = true;
-      stopParticles();
-      stopSymbols();
-      document.body.classList.add('scrolling-paused');
-      scrollPauseTimer = setTimeout(resumeAfterScroll, SCROLL_PAUSE_MS);
-    }
-    function resumeAfterScroll(){
-      if(!isScrollPaused) return;
-      isScrollPaused = false;
-      document.body.classList.remove('scrolling-paused');
-      if(!animationsDisabled && heavyVisualsAllowed){
-        startSymbols();
-        startParticles();
-      }
-      if(scrollPauseTimer){ clearTimeout(scrollPauseTimer); scrollPauseTimer = null; }
-    }
+    const noOp = function() {};
     const passiveOpts = { passive: true };
-    window.addEventListener('wheel', pauseForScroll, passiveOpts);
-    window.addEventListener('touchstart', pauseForScroll, passiveOpts);
-    window.addEventListener('touchmove', pauseForScroll, passiveOpts);
-    window.addEventListener('pointerdown', pauseForScroll, passiveOpts);
-    window.addEventListener('scroll', pauseForScroll, passiveOpts);
-    document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') resumeAfterScroll(); });
+    window.addEventListener('wheel', noOp, passiveOpts);
+    window.addEventListener('touchstart', noOp, passiveOpts);
+    window.addEventListener('touchmove', noOp, passiveOpts);
+    window.addEventListener('pointerdown', noOp, passiveOpts);
+    window.addEventListener('scroll', noOp, passiveOpts);
+    document.addEventListener('visibilitychange', noOp);
   })();
 
 

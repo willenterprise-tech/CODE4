@@ -1,9 +1,9 @@
 /* C4 Assistant embeddable widget (vanilla JS) */
 (function(){
   const rootId = 'c4-assistant'
-  // If on a narrow/mobile viewport, do not inject the embeddable assistant
-  const isMobileView = (typeof window !== 'undefined') && (window.matchMedia ? window.matchMedia('(max-width:768px)').matches : window.innerWidth <= 768)
-  if (isMobileView) {
+  // Only inject the assistant on desktop viewports. Do not load on mobile/tablet.
+  const isDesktop = (typeof window !== 'undefined') && (window.matchMedia ? window.matchMedia('(min-width:769px)').matches : window.innerWidth > 768)
+  if (!isDesktop) {
     const existing = document.getElementById(rootId)
     if (existing) existing.remove()
     return
@@ -69,6 +69,7 @@
 
   // allow vertical page scroll by default but permit horizontal drag gestures
   try { btn.style.touchAction = btn.style.touchAction || 'pan-y'; } catch (err) { /* ignore */ }
+  try { btn.style.zIndex = btn.style.zIndex || '100000'; } catch (err) { /* ignore */ }
 
   // Dragging state for the floating bot
   let dragState = {
@@ -106,15 +107,7 @@
     dragState.offsetX = e.clientX - rect.left
     dragState.offsetY = e.clientY - rect.top
     dragState.moved = false
-
-    // For mouse/pen start dragging immediately, for touch wait to detect horizontal swipe
-    if (e.pointerType !== 'touch'){
-      dragState.active = true
-      btn.classList.add('dragging')
-      prepareForDrag(e.clientX, e.clientY)
-      try { btn.setPointerCapture && btn.setPointerCapture(e.pointerId) } catch (err) { /* ignore */ }
-      e.preventDefault()
-    }
+    dragState.active = false
 
     document.addEventListener('pointermove', onPointerMove)
     document.addEventListener('pointerup', onPointerUp)
@@ -130,18 +123,12 @@
     if (!dragState.moved) {
       if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return
       dragState.moved = true
-      // If this is a touch, only start dragging for a clear horizontal gesture
-      if (!dragState.active && e.pointerType === 'touch'){
-        if (Math.abs(dx) > Math.abs(dy) * 1.6 && Math.abs(dx) > DRAG_THRESHOLD){
-          dragState.active = true
-          btn.classList.add('dragging')
-          try { btn.setPointerCapture && btn.setPointerCapture(e.pointerId) } catch (err) { /* ignore */ }
-          prepareForDrag(e.clientX, e.clientY)
-        } else {
-          // vertical-dominant or ambiguous gesture -> allow page scroll
-          cleanupPointerListeners()
-          return
-        }
+      if (!dragState.active){
+        // start dragging when a meaningful move begins
+        dragState.active = true
+        btn.classList.add('dragging')
+        try { btn.setPointerCapture && btn.setPointerCapture(e.pointerId) } catch (err) { /* ignore */ }
+        prepareForDrag(e.clientX, e.clientY)
       }
     }
 
@@ -165,7 +152,7 @@
 
   function onPointerUp(e){
     if (dragState.pointerId !== e.pointerId){ cleanupPointerListeners(); return }
-    if (dragState.active){
+    if (dragState.active && dragState.moved){
       // finish drag
       btn.classList.remove('dragging')
       try { btn.releasePointerCapture && btn.releasePointerCapture(e.pointerId) } catch (err) { /* ignore */ }
@@ -357,7 +344,12 @@
   btn.addEventListener('click', (e)=>{ 
     if(suppressClick){ e.stopPropagation(); e.preventDefault(); suppressClick = false; return }
     e.stopPropagation(); 
-    if(panel.hidden) openPanel(); else closePanel(); 
+    try {
+      if(panel && panel.hidden) openPanel(); else if(panel) closePanel();
+    } catch (err) {
+      console.error('C4Assistant: failed to toggle panel', err);
+      try { if(panel){ panel.hidden = false; panel.classList.add('show'); } } catch(_){}
+    }
   })
   root.querySelector('[data-c4-close]').addEventListener('click', closePanel)
 
