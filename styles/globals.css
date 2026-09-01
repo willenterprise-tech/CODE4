@@ -68,6 +68,52 @@ body{margin:0;font-family:'Space Grotesk',system-ui,-apple-system,Segoe UI,Robot
 .trusted-logos{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
 .logo-placeholder{background:rgba(255,255,255,0.02);padding:1rem 1.4rem;border-radius:8px;color:var(--muted)}
 
+/* Marquee-style trusted logos (two rows sliding right→left) */
+.trusted-marquee{overflow:hidden;padding-top:0.5rem;padding-bottom:0.25rem}
+.marquee-row{overflow:hidden;width:100%;box-sizing:border-box;padding:0.25rem 0}
+.marquee-track{display:flex;gap:1.2rem;align-items:center;width:max-content;will-change:transform;animation:marquee-left 28s linear infinite}
+.marquee-track.slow{animation-duration:36s}
+.marquee-group{display:flex;gap:1.2rem;align-items:center}
+.marquee-track .trusted-item{
+  display:flex;
+  align-items:center;
+  gap:0.6rem;
+  padding:0.45rem 0.6rem;
+  background:transparent;
+  border-radius:8px;
+  min-width:160px;
+  max-width:320px; /* allow caption area to expand */
+  box-sizing:border-box;
+}
+.marquee-track .trusted-item img{
+  width:56px;
+  height:56px;
+  object-fit:contain;
+  border-radius:50%;
+  background:rgba(255,255,255,0.02);
+  padding:6px;
+  display:block;
+}
+.marquee-track .trusted-item .trusted-placeholder{
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,0.02);
+  color:var(--muted);
+  font-weight:700;
+}
+.marquee-track .trusted-caption{font-size:1rem;color:var(--muted);font-weight:700;white-space:normal;overflow-wrap:break-word;max-width:calc(100% - 72px);line-height:1.15}
+
+@keyframes marquee-left{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+.trusted-marquee:hover .marquee-track{animation-play-state:paused}
+
+@media (prefers-reduced-motion:reduce){.marquee-track{animation:none!important}}
+
+
 /* Services */
 .services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1rem}
 .card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);padding:1.2rem;border-radius:12px;backdrop-filter:blur(6px);transition:transform .26s,box-shadow .26s}
