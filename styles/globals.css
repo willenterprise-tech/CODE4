@@ -71,7 +71,7 @@ body{margin:0;font-family:'Space Grotesk',system-ui,-apple-system,Segoe UI,Robot
 /* Marquee-style trusted logos (two rows sliding right→left) */
 .trusted-marquee{overflow:hidden;padding-top:0.5rem;padding-bottom:0.25rem}
 .marquee-row{overflow:hidden;width:100%;box-sizing:border-box;padding:0.25rem 0}
-.marquee-track{display:flex;gap:1.2rem;align-items:center;width:max-content;will-change:transform;animation:marquee-left 65s linear infinite}
+.marquee-track{display:flex;gap:1.2rem;align-items:center;width:max-content;will-change:transform;animation:marquee-left 100s linear infinite}
 .marquee-track.slow{animation-duration:65s}
 .marquee-group{display:flex;gap:1.2rem;align-items:center}
 .marquee-track .trusted-item{
