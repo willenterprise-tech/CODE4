@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
       const smsHref = 'sms:' + smsNumber + '?body=' + encoded;
       const waHref = 'https://wa.me/' + waNumber + '?text=' + encoded;
-      const mailtoHref = 'mailto:we.code4@gmail.com?subject=' + encodeURIComponent('Code4 website contact: ' + nameVal) + '&body=' + encodeURIComponent(bodyText);
+      const mailtoHref = 'mailto:we.code4@gmail.com?subject=' + encodeURIComponent('G3Labs website contact: ' + nameVal) + '&body=' + encodeURIComponent(bodyText);
 
       const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       try{

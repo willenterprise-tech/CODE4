@@ -2,7 +2,8 @@ import './globals.css'
 import RobotAssistant from '../components/ai/RobotAssistant'
 
 export const metadata = {
-  title: 'Assistant Demo',
+  title: 'G3Labs Assistant',
+  description: 'Chat with the G3Labs virtual assistant.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }){

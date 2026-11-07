@@ -1,6 +1,6 @@
-# C4-Bot Assistant (assistant-app)
+# G3Labs Assistant (assistant-app)
 
-This is a small Next.js (App Router) demo app that implements the C4-Bot assistant UI for Code4.
+This is a small Next.js (App Router) demo app that implements the G3Labs assistant UI.
 
 Features included:
 - Floating robot avatar with cursor-follow, blink and wave on load

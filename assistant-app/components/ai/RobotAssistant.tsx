@@ -10,29 +10,29 @@ const SUGGESTIONS = [
   'Tell me about your services',
   'What is cybersecurity?',
   'Show portfolio',
-  'Contact Code4',
+  'Contact G3Labs',
   'Get a quote'
 ]
 
 export default function RobotAssistant(){
   const [open, setOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([{ id: 'welcome', from: 'bot', text: "Hi! I'm C4-Bot. How can I help you today?" }])
+  const [messages, setMessages] = useState<Message[]>([{ id: 'welcome', from: 'bot', text: "Hi! I'm the G3Labs assistant. How can I help you today?" }])
   const [isResponding, setResponding] = useState(false)
   const [headFollow, setHeadFollow] = useState({ x: 0, y: 0 })
 
   // simple response mapping
   // Knowledge base
   const KB = {
-    companyName: 'Code4',
+    companyName: 'G3Labs',
     tagline: 'Code the Future',
     website: 'www.code4dev.vercel.app',
     email: 'we.code4@gmail.com',
-    description: 'Code4 is a software development, cybersecurity, and data solutions company that helps businesses build, secure, and scale digital products. We also provide coding and AI training through Code4 Academy.',
+    description: 'G3Labs is a software development, cybersecurity, and data solutions company that helps businesses build, secure, and scale digital products. We also provide coding and AI training through G3Labs Academy.',
     quick: {
-      services: 'We specialize in custom software development, web and mobile applications, cybersecurity, cloud solutions, data analysis, Code4 Academy, and DevOps with QA testing.',
+      services: 'We specialize in custom software development, web and mobile applications, cybersecurity, cloud solutions, data analysis, G3Labs Academy, and DevOps with QA testing.',
       cybersecurity: 'We protect your systems, networks, and data through assessments, secure architecture, and monitoring.',
       data: 'We transform data into actionable insights using analytics, dashboards, and visualizations.',
-      academy: 'We provide practical training in coding, software development, AI, and data analysis through Code4 Academy.',
+      academy: 'We provide practical training in coding, software development, AI, and data analysis through G3Labs Academy.',
       portfolio: 'We have built e-commerce platforms, school management systems, cybersecurity dashboards, and AI business assistants.',
       contact: 'You can reach us at we.code4@gmail.com or visit www.code4dev.vercel.app.'
     }

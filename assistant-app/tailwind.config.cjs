@@ -3,7 +3,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        code4: {
+        g3labs: {
           navy: '#081225',
           electric: '#00E5FF',
           cyan: '#00CFFF'
