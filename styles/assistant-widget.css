@@ -5,45 +5,9 @@
   --c4-cyan:#00D4DC;
 }
 
-/* Remove assistant entirely on small/mobile viewports */
-@media (max-width:768px){
-  #c4-assistant, .c4-robot-wrap, .c4a-robot-btn{ display: none !important }
-}
-
-/* Extra pin overrides to ensure assistant stays fully visible on small screens */
-@media (max-width:820px){
-  /* Make the robot capture touch gestures on small screens so dragging works reliably */
-  .c4a-robot-btn{touch-action:none}
-  /* keep assistant defaults; avoid forcing full-width or hiding the widget here */
-  .c4a-robot-btn{
-    position:fixed;
-    right:12px;
-    left:auto;
-    bottom:16px;
-    transform:none;
-    margin:0;
-    z-index:2147483647;
-    pointer-events:auto;
-  }
-  .c4a-panel{
-    position:fixed;
-    right:12px;
-    left:auto;
-    bottom:calc(16px + 64px + 12px);
-    transform:none;
-    z-index:2147483646;
-    max-width:calc(100vw - 32px);
-    width:calc(100vw - 32px);
-  }
-}
-
-@media (max-width:480px){
-  .c4a-robot-btn{right:12px;bottom:10px}
-  .c4a-panel{right:12px;bottom:calc(10px + 60px + 10px);width:calc(100vw - 28px);max-width:340px}
-}
-
 #c4-assistant{position:fixed;right:20px;bottom:24px;z-index:99999;display:flex;flex-direction:column;align-items:flex-end;pointer-events:none}
 .c4a-panel{width:360px;max-width:calc(100vw - 40px);height:520px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));backdrop-filter:blur(8px);border-radius:14px;border:1px solid rgba(0,220,255,0.12);box-shadow:0 20px 50px rgba(2,8,20,0.6);display:flex;flex-direction:column;overflow:hidden;margin-bottom:12px;pointer-events:auto;opacity:0;transform:translateY(6px) scale(.995);transition:opacity .18s ease,transform .18s ease}
+.c4a-panel[hidden], .c4a-launcher-label{display:none}
 .c4a-panel.show{opacity:1;transform:translateY(0) scale(1)}
 .c4a-chat-header{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:space-between;gap:12px}
 .c4a-chat-title{font-weight:700;color:#e6f9ff}
@@ -54,7 +18,7 @@
 .c4a-quick-actions{padding:10px 14px;border-top:1px solid rgba(255,255,255,0.02);display:flex;gap:8px;flex-wrap:wrap}
 .c4a-quick-btn{background:transparent;border:1px solid rgba(0,255,255,0.06);padding:6px 8px;border-radius:8px;color:var(--c4-electric);font-weight:600;cursor:pointer}
 .c4a-input-bar{padding:10px 12px;border-top:1px solid rgba(255,255,255,0.02);display:flex;gap:8px;align-items:center}
-.c4a-input{flex:1}
+.c4a-input{flex:1;min-width:0}
 .c4a-input input{width:100%;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:#eaffff}
 .c4a-send{background:linear-gradient(90deg,var(--c4-electric),var(--c4-cyan));padding:8px;border-radius:8px;color:#022;display:inline-flex;align-items:center;justify-content:center;border:none;cursor:pointer}
 
@@ -83,79 +47,64 @@
 @keyframes c4a-pulse{0%{transform:scale(.96);opacity:.6}50%{transform:scale(1.06);opacity:1}100%{transform:scale(.96);opacity:.6}}
 @keyframes c4a-wave{0%{transform:rotate(0)}20%{transform:rotate(-25deg)}40%{transform:rotate(10deg)}60%{transform:rotate(-10deg)}100%{transform:rotate(0)}}
 
-/* reduce motion respect */
-@media (prefers-reduced-motion: reduce){.c4a-robot-floating{animation:none}.c4a-halo,.c4a-pulse{animation:none}.c4a-panel{transition:none}}
+.c4a-robot-btn{animation:c4a-wave 1.2s ease}
+
+/* System preference applies until the visitor explicitly turns animations on. */
+@media (prefers-reduced-motion: reduce){body:not(.animations-enabled) :is(.c4a-robot-btn,.c4a-robot-floating,.c4a-halo,.c4a-pulse){animation:none}body:not(.animations-enabled) .c4a-panel{transition:none}}
 
 /* small helpers */
 .c4a-hidden{display:none !important}
 .c4a-muted{color:rgba(255,255,255,0.6);font-size:12px}
 
-/* Mobile responsiveness */
-@media (max-width:768px){
-  html{overflow-x:hidden}
-  /* Keep assistant inside viewport with safe gutters */
-  #c4-assistant{position:fixed;right:8px;bottom:16px;left:auto;z-index:99999;box-sizing:border-box;max-width:calc(100vw - 16px)}
-  .c4a-panel{
-    width:calc(100vw - 16px);
-    max-width:360px;
-    box-sizing:border-box;
-    height:auto;
-    max-height:calc(100vh - 120px);
-    margin:0 0 8px 0;
-    backdrop-filter:none !important;
-    box-shadow:none !important;
-    background:rgba(2,6,23,0.96) !important;
-    border:1px solid rgba(255,255,255,0.03) !important;
-    overflow:hidden;
+@media (max-width:768px) {
+  #c4-assistant {
+    --chat-gutter: 12px;
+    --chat-bottom: max(var(--chat-gutter), env(safe-area-inset-bottom));
+    right: max(var(--chat-gutter), env(safe-area-inset-right));
+    bottom: calc(var(--chat-bottom) + var(--chat-keyboard-inset, 0px));
+    width: 360px;
+    max-width: calc(100% - max(12px, env(safe-area-inset-left)) - max(12px, env(safe-area-inset-right)));
   }
-  .c4a-panel.show{overflow:auto}
-  .c4a-halo,.c4a-pulse{display:none !important}
-  .c4a-robot-btn{width:64px;height:64px;box-shadow:none !important}
-  .c4a-robot-svg{width:56px;height:56px;filter:none !important}
-  .c4a-bubble{display:none}
-}
 
-/* Overrides to ensure assistant stays inside viewport on mobile */
-@media (max-width:768px){
-  .c4a-robot-btn{position:fixed;right:12px;bottom:16px;z-index:100000;pointer-events:auto}
-  .c4a-panel{position:fixed;right:12px;bottom:calc(16px + 64px + 12px);left:auto;max-width:360px;width:calc(100vw - 32px)}
-  #c4-assistant{align-items:flex-end}
-}
+  .mobile-menu-open #c4-assistant,
+  .wenix-viewer-open #c4-assistant { visibility: hidden; }
 
-@media (max-width:480px){
-  .c4a-robot-btn{position:fixed;right:10px;bottom:8px;z-index:100000;pointer-events:auto}
-  .c4a-panel{position:fixed;right:10px;bottom:calc(8px + 60px + 10px);left:auto;max-width:340px;width:calc(100vw - 24px)}
-  #c4-assistant{align-items:flex-end}
-}
-
-@media (max-width:480px){
-  html{overflow-x:hidden}
-  #c4-assistant{position:fixed;right:8px;bottom:8px;left:auto;z-index:99999;box-sizing:border-box;max-width:calc(100vw - 12px)}
-  .c4a-panel{
-    width:calc(100vw - 12px);
-    max-width:340px;
-    box-sizing:border-box;
-    height:auto;
-    max-height:calc(100vh - 100px);
-    margin:0 0 6px 0;
-    backdrop-filter:none !important;
-    box-shadow:none !important;
-    background:rgba(2,6,23,0.96) !important;
-    border:1px solid rgba(255,255,255,0.03) !important;
-    overflow:hidden;
+  .c4a-robot-btn {
+    width: auto;
+    height: 52px;
+    padding: 0 14px 0 4px;
+    border-radius: 28px;
+    border-color: rgba(0,229,232,.45);
+    cursor: pointer;
+    touch-action: manipulation;
   }
-  .c4a-panel.show{overflow:auto}
-  .c4a-halo,.c4a-pulse{display:none !important}
-  .c4a-robot-btn{width:60px;height:60px;margin-right:0;box-shadow:none !important}
-  .c4a-robot-svg{width:48px;height:48px;filter:none !important}
-  .c4a-msg{max-width:90%;padding:8px 10px;font-size:0.95rem}
-  .c4a-chat-header{padding:10px 12px}
-  .c4a-quick-actions{padding:8px 12px;gap:6px}
-  .c4a-quick-btn{padding:5px 7px;font-size:0.8rem}
-  .c4a-input-bar{padding:8px 10px;gap:6px}
-  .c4a-input input{padding:8px 10px;font-size:16px}
-  .c4a-send{padding:6px}
-  .c4a-bubble{display:none}
+  .c4a-robot-svg { width: 44px; height: 44px; }
+  .c4a-launcher-label { display: inline; color: #eaffff; font-size: 14px; font-weight: 700; }
+  .c4a-bubble, .c4a-halo, .c4a-pulse { display: none; }
+  .c4a-panel {
+    width: 100%;
+    max-width: none;
+    height: 480px;
+    max-height: calc(100vh - var(--chat-bottom) - 72px);
+    max-height: calc(var(--chat-visible-height, 100dvh) - var(--chat-bottom) - 72px);
+    margin-bottom: 8px;
+    background: #0c192a;
+  }
+  .c4a-chat-messages { min-height: 0; overscroll-behavior: contain; }
+  .c4a-quick-actions {
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 4px 10px;
+  }
+  .c4a-quick-btn { flex-shrink: 0; min-height: 44px; }
+  .c4a-input-bar { padding: 6px 10px; }
+  .c4a-input input { font-size: 16px; }
+  .c4a-send, .c4a-chat-header button { min-width: 44px; min-height: 44px; }
+  .short-chat .c4a-robot-btn { display: none; }
+  .short-chat .c4a-panel {
+    max-height: calc(var(--chat-visible-height) - var(--chat-bottom) - 8px);
+    margin-bottom: 0;
+  }
+  .short-chat .c4a-chat-header { padding-block: 0; }
 }
-
-/* Removed forced mobile hide so widget can appear on mobile devices */

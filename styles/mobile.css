@@ -284,19 +284,18 @@ body {
   margin: 0;
 }
 
-.trusted .marquee-row {
+.animations-disabled .marquee-row {
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scrollbar-color: #4b5b70 transparent;
   scrollbar-width: thin;
 }
 
-.trusted .marquee-track {
-  animation: none;
+.animations-disabled .marquee-track {
   will-change: auto;
 }
 
-.trusted .marquee-group + .marquee-group {
+.animations-disabled .marquee-group + .marquee-group {
   display: none;
 }
 
@@ -343,7 +342,7 @@ body {
 .back-to-top {
   z-index: 70;
   right: max(0.75rem, env(safe-area-inset-right));
-  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  bottom: calc(max(0.75rem, env(safe-area-inset-bottom)) + 4.25rem);
 }
 
 @media (min-width: 560px) {

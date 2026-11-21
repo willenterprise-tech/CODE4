@@ -1,18 +1,14 @@
 /* C4 Assistant embeddable widget (vanilla JS) */
 (function(){
   const rootId = 'c4-assistant'
-  // Do not inject the assistant on small viewports (mobile).
-  // This prevents loading UI and event listeners that interfere on phones.
-  let isMobileViewport = false
-  try { isMobileViewport = !!(window && window.matchMedia && window.matchMedia('(max-width:768px)').matches) } catch(e) { isMobileViewport = false }
-  if (isMobileViewport) return
   if (document.getElementById(rootId)) return
+  const phoneLayout = window.matchMedia('(max-width:768px)')
 
   // create root
   const root = document.createElement('div')
   root.id = rootId
   root.innerHTML = `
-    <div class="c4a-panel" role="dialog" aria-label="G3 Labs Assistant chat" hidden>
+    <div class="c4a-panel" id="c4-assistant-chat" role="dialog" aria-label="G3 Labs Assistant chat" hidden>
       <div class="c4a-chat-header">
         <div style="display:flex;gap:12px;align-items:center">
           <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(90deg,#052230,#062634);display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="10" r="3" fill="#00E5FF" /></svg></div>
@@ -38,7 +34,7 @@
         <button class="c4a-send" aria-label="Send">➤</button>
       </div>
     </div>
-    <button class="c4a-robot-btn" aria-label="Open chat">
+    <button type="button" class="c4a-robot-btn" aria-label="Open chat" aria-controls="c4-assistant-chat" aria-expanded="false">
       <div class="c4a-halo" aria-hidden="true"></div>
       <div class="c4a-pulse" aria-hidden="true"></div>
       <svg class="c4a-robot-svg c4a-robot-floating" viewBox="0 0 84 84" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -51,6 +47,7 @@
           </g>
         </g>
       </svg>
+      <span class="c4a-launcher-label" aria-hidden="true">Chat</span>
       <div class="c4a-bubble">Hi! I'm the G3 Labs assistant. How can I help you today?</div>
     </button>
   `
@@ -64,11 +61,6 @@
   const messages = root.querySelector('.c4a-chat-messages')
   const input = root.querySelector('.c4a-input input')
   const sendBtn = root.querySelector('.c4a-send')
-
-  // touch-action: left to CSS for default; mobile CSS may set `none` so
-  // the element captures gestures reliably. We avoid forcing inline
-  // touch-action here so stylesheet rules can take precedence.
-  try { btn.style.zIndex = btn.style.zIndex || '100000'; } catch (err) { /* ignore */ }
 
   // Dragging state for the floating bot
   let dragState = {
@@ -103,12 +95,19 @@
     btn.style.zIndex = '2147483647'
   }
 
-  // persist / restore position so mobile/desktop keep the last user placement
+  // Remember the draggable desktop position. Phones have a docked launcher.
   function persistPosition(left, top){
     try{ localStorage.setItem('c4_assistant_pos', Math.round(left) + ',' + Math.round(top)) } catch(e){}
   }
 
   function restorePosition(){
+    if(phoneLayout.matches){
+      btn.style.removeProperty('position')
+      for(const prop of ['left', 'right', 'top', 'bottom', 'transform', 'will-change', 'z-index']){
+        btn.style.removeProperty(prop)
+      }
+      return
+    }
     try{
       const val = localStorage.getItem('c4_assistant_pos')
       if(!val) return
@@ -116,41 +115,22 @@
       if(parts.length !== 2) return
       const l = Number(parts[0])
       const t = Number(parts[1])
-      if(isNaN(l) || isNaN(t)) return
+      if(!Number.isFinite(l) || !Number.isFinite(t)) return
       // apply fixed inline position
       btn.style.setProperty('position','fixed','important')
       btn.style.setProperty('right','auto','important')
       btn.style.setProperty('bottom','auto','important')
-      btn.style.setProperty('left', l + 'px','important')
-      btn.style.setProperty('top', t + 'px','important')
+      btn.style.setProperty('left', Math.max(8, Math.min(l, window.innerWidth - btn.offsetWidth - 8)) + 'px','important')
+      btn.style.setProperty('top', Math.max(8, Math.min(t, window.innerHeight - btn.offsetHeight - 8)) + 'px','important')
       btn.style.setProperty('transform','none','important')
     } catch(e){}
   }
 
-  // ensure stored position stays inside viewport on resize
-  window.addEventListener('resize', ()=>{
-    try{
-      const val = localStorage.getItem('c4_assistant_pos')
-      if(!val) return
-      const [l,t] = val.split(',').map(Number)
-      if(isNaN(l) || isNaN(t)) return
-      const vw = window.innerWidth, vh = window.innerHeight
-      const rect = btn.getBoundingClientRect()
-      const w = rect.width || 84, h = rect.height || 84
-      const clampedLeft = Math.max(8, Math.min(l, vw - w - 8))
-      const clampedTop = Math.max(8, Math.min(t, vh - h - 8))
-      if(clampedLeft !== l || clampedTop !== t){
-        persistPosition(clampedLeft, clampedTop)
-        btn.style.setProperty('left', clampedLeft + 'px','important')
-        btn.style.setProperty('top', clampedTop + 'px','important')
-      }
-    } catch(_){}
-  })
-
-  // restore on init
+  window.addEventListener('resize', restorePosition)
   restorePosition()
 
   function onPointerDown(e){
+    if(phoneLayout.matches) return
     // only react to primary buttons/touches
     if (e.button && e.button !== 0) return
     dragState.pointerId = e.pointerId
@@ -270,6 +250,7 @@
     let touchDrag = { startX: 0, startY: 0, offsetX: 0, offsetY: 0, moved: false, active: false }
 
     function onTouchStart(ev){
+      if(phoneLayout.matches) return
       if(!ev.touches || ev.touches.length !== 1) return
       const t = ev.touches[0]
       touchDrag.startX = t.clientX
@@ -282,6 +263,7 @@
     }
 
     function onTouchMove(ev){
+      if(phoneLayout.matches) return
       if(!ev.touches || ev.touches.length !== 1) return
       const t = ev.touches[0]
       const dx = t.clientX - touchDrag.startX
@@ -431,30 +413,52 @@
 
   // blink animation
   function blinkOnce(){
+    if(document.body.classList.contains('animations-disabled')) return
     const eyes = root.querySelectorAll('.c4a-eye')
     eyes.forEach(e => e.classList.add('blinked'))
     setTimeout(()=> eyes.forEach(e => e.classList.remove('blinked')), 180)
   }
   setInterval(()=>{ if(Math.random() > 0.45) blinkOnce() }, 2800)
 
-  // wave animation (small rotation of svg)
-  btn.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(-18deg)' }, { transform: 'rotate(12deg)' }, { transform: 'rotate(-6deg)' }, { transform: 'rotate(0deg)' }], { duration: 1200, easing: 'ease', iterations: 1 })
+  // Keep the composer in the visible portion of a phone screen when the keyboard opens.
+  function fitPanel(){
+    if(panel.hidden || !phoneLayout.matches) return
+    const viewport = window.visualViewport
+    const height = viewport ? viewport.height : window.innerHeight
+    const bottom = viewport ? Math.max(0, window.innerHeight - height - viewport.offsetTop) : 0
+    root.style.setProperty('--chat-visible-height', height + 'px')
+    root.style.setProperty('--chat-keyboard-inset', bottom + 'px')
+    root.classList.toggle('short-chat', height < 430)
+  }
+  window.addEventListener('resize', fitPanel)
+  window.visualViewport?.addEventListener('resize', fitPanel)
+  window.visualViewport?.addEventListener('scroll', fitPanel)
 
-  // toggle panel
-  function openPanel(){ panel.hidden = false; panel.classList.add('show'); panel.querySelector('[data-c4-close]').focus(); }
-  function closePanel(){ panel.classList.remove('show'); setTimeout(()=> panel.hidden = true, 220) }
+  function setPanelOpen(open, returnFocus = true){
+    panel.hidden = !open
+    panel.classList.toggle('show', open)
+    btn.setAttribute('aria-expanded', String(open))
+    btn.setAttribute('aria-label', open ? 'Close chat' : 'Open chat')
+    if(open){
+      fitPanel()
+      panel.querySelector('[data-c4-close]').focus({preventScroll:true})
+    } else {
+      root.classList.remove('short-chat')
+      root.style.removeProperty('--chat-keyboard-inset')
+      root.style.removeProperty('--chat-visible-height')
+      if(returnFocus) btn.focus({preventScroll:true})
+    }
+  }
 
   btn.addEventListener('click', (e)=>{ 
     if(suppressClick){ e.stopPropagation(); e.preventDefault(); suppressClick = false; return }
     e.stopPropagation(); 
-    try {
-      if(panel && panel.hidden) openPanel(); else if(panel) closePanel();
-    } catch (err) {
-      console.error('C4Assistant: failed to toggle panel', err);
-      try { if(panel){ panel.hidden = false; panel.classList.add('show'); } } catch(_){}
-    }
+    setPanelOpen(panel.hidden)
   })
-  root.querySelector('[data-c4-close]').addEventListener('click', closePanel)
+  root.querySelector('[data-c4-close]').addEventListener('click', () => setPanelOpen(false))
+  root.addEventListener('keydown', e => {
+    if(e.key === 'Escape' && !panel.hidden) setPanelOpen(false)
+  })
 
   // quick actions
   root.querySelectorAll('.c4a-quick-btn').forEach(b => b.addEventListener('click', function(){ const txt = this.textContent.trim(); addMessage('user', txt); setTimeout(()=> addMessage('bot', canned(txt)), 800) }))
@@ -465,6 +469,7 @@
 
   // small head following using mousemove
   window.addEventListener('mousemove', (ev)=>{
+    if(phoneLayout.matches || document.body.classList.contains('animations-disabled')) return
     const rect = btn.getBoundingClientRect()
     const cx = rect.left + rect.width/2
     const cy = rect.top + rect.height/2
@@ -475,7 +480,7 @@
   })
 
   // accessibility: close on outside click
-  document.addEventListener('click', (ev)=>{ if(!root.contains(ev.target)){ if(!panel.hidden) closePanel() } })
+  document.addEventListener('click', (ev)=>{ if(!panel.hidden && !root.contains(ev.target)) setPanelOpen(false, false) })
 
   // Optional on-screen debug overlay (enable with ?c4debug=1 or
   // localStorage.setItem('c4_assistant_debug','1')) — useful for testing on mobile

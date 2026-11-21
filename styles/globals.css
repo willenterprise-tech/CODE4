@@ -93,9 +93,9 @@ body{margin:0;font-family:'Space Grotesk',system-ui,-apple-system,Segoe UI,Robot
 
 @keyframes marquee-left{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-.trusted-marquee:hover .marquee-track{animation-play-state:paused}
+@media (hover:hover){.trusted-marquee:hover .marquee-track{animation-play-state:paused}}
 
-@media (prefers-reduced-motion:reduce){.marquee-track{animation:none!important}}
+@media (prefers-reduced-motion:reduce){body:not(.animations-enabled) .marquee-track{animation:none}}
 
 
 /* Services */
@@ -287,9 +287,9 @@ main{position:relative;z-index:1}
 .btn-primary:hover,.btn-cta:hover{box-shadow:0 10px 30px rgba(0,212,220,0.20),0 4px 12px rgba(0,229,232,0.08);transform:translateY(-2px)}
 .card.reveal.show{transform:translateY(0) scale(1);box-shadow:0 22px 50px rgba(0,212,220,0.10)}
 
-@media (prefers-reduced-motion:reduce){.hero-bg-anim,.floater,.chart,.dash-top .dot,.particles-canvas{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){body:not(.animations-enabled) :is(.hero-bg-anim,.floater,.chart,.dash-top .dot,.particles-canvas){animation:none;transition:none}}
 
-@media (max-width:720px){.particles-canvas{display:none}.hero-bg-anim{opacity:0.6}}
+@media (max-width:720px){.hero-bg-anim{opacity:0.6}}
 
 /* Force trusted logos to grid layout (override duplicate rules) */
 .trusted-logos{

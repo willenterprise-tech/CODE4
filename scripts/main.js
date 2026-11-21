@@ -22,8 +22,9 @@ document.addEventListener('DOMContentLoaded', function(){
     s.style.top = (10 + Math.random()*70) + '%';
     s.style.opacity = (0.05 + Math.random()*0.25).toString();
     s.style.fontSize = (10 + Math.random()*20) + 'px';
-    s.style.color = 'rgba(0,229,255,0.12)';
+    s.style.color = 'var(--cyan)';
     s.style.pointerEvents = 'none';
+    s.setAttribute('aria-hidden', 'true');
     s.style.transform = 'translate(-50%, -50%) rotate(' + (Math.random()*40-20) + 'deg)';
     s.textContent = Math.random()>0.6?'{ }':'< />';
     hero.appendChild(s);
@@ -34,8 +35,9 @@ document.addEventListener('DOMContentLoaded', function(){
   function startSymbols(){
     if(!hero) return;
     stopSymbols();
-    for(let i=0;i<10;i++) spawnSymbol();
-    symbolInterval = setInterval(spawnSymbol, 1100);
+    const compact = phoneLayout.matches;
+    for(let i=0;i<(compact ? 4 : 10);i++) spawnSymbol();
+    symbolInterval = setInterval(spawnSymbol, compact ? 2400 : 1100);
   }
   function stopSymbols(){
     if(symbolInterval){ clearInterval(symbolInterval); symbolInterval = null; }
@@ -45,8 +47,10 @@ document.addEventListener('DOMContentLoaded', function(){
   function initParticles(){
     const canvas = document.createElement('canvas');
     canvas.className = 'particles-canvas';
-    document.body.appendChild(canvas);
+    canvas.setAttribute('aria-hidden', 'true');
     const ctx = canvas.getContext('2d');
+    if(!ctx) return;
+    document.body.appendChild(canvas);
     let width = canvas.width = window.innerWidth;
     let height = canvas.height = window.innerHeight;
     let rafId = null;
@@ -56,8 +60,8 @@ document.addEventListener('DOMContentLoaded', function(){
     window.addEventListener('resize', resize);
 
     function rand(min, max){ return Math.random()*(max-min)+min }
-    const deviceFactor = window.innerWidth < 720 ? 0.6 : 1;
-    const desiredCount = Math.floor(60 * deviceFactor + (width / 30));
+    const deviceFactor = phoneLayout.matches ? 0.7 : 1;
+    const desiredCount = phoneLayout.matches ? Math.round(width / 12) : Math.floor(60 + width / 30);
     const maxCount = Math.min(120, Math.max(24, desiredCount));
 
     class Particle{
@@ -100,18 +104,10 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function startAnimations(){
     document.body.classList.remove('animations-disabled');
-    if(phoneLayout.matches){
-      stopSymbols();
-      stopParticles();
-      stopReveal();
-    } else {
-      if('IntersectionObserver' in window){
-        stopReveal();
-        startReveal();
-      }
-      startSymbols();
-      startParticles();
-    }
+    document.body.classList.add('animations-enabled');
+    if('IntersectionObserver' in window) startReveal();
+    startSymbols();
+    startParticles();
     if(toggleBtn){
       toggleBtn.setAttribute('aria-pressed', 'true');
       toggleBtn.classList.add('active');
@@ -119,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }
   function stopAnimations(){
+    document.body.classList.remove('animations-enabled');
     document.body.classList.add('animations-disabled');
     stopSymbols();
     stopParticles();
@@ -136,12 +133,21 @@ document.addEventListener('DOMContentLoaded', function(){
   if(toggleBtn){
     toggleBtn.addEventListener('click', function(){
       animationsDisabled = !animationsDisabled;
-      try { localStorage.setItem(storageKey, String(animationsDisabled)); } catch {}
+      savedPreference = String(animationsDisabled);
+      try { localStorage.setItem(storageKey, savedPreference); } catch {}
       if(animationsDisabled) stopAnimations(); else startAnimations();
     });
   }
   phoneLayout.addEventListener('change', function(){
-    if(!animationsDisabled) startAnimations();
+    if(!animationsDisabled){
+      startSymbols();
+      startParticles();
+    }
+  });
+  reducedMotion.addEventListener('change', function(){
+    if(savedPreference !== null) return;
+    animationsDisabled = reducedMotion.matches;
+    if(animationsDisabled) stopAnimations(); else startAnimations();
   });
 
   // Contact form: open SMS (mobile) or WhatsApp (desktop) with prefilled content to owner's number; mailto fallback
