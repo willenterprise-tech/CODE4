@@ -3,26 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Contact — G3Labs</title>
-  <meta name="description" content="Contact G3Labs for software development and cybersecurity services.">
-  <meta property="og:title" content="Contact — G3Labs">
+  <title>Contact — G3 Labs</title>
+  <meta name="description" content="Contact G3 Labs for software development and cybersecurity services.">
+  <meta property="og:title" content="Contact — G3 Labs">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="icon" href="assets/images/G3%20Labs%20Logo.png" type="image/png">
+  <link rel="icon" href="assets/images/g3-labs-icon-192.png" type="image/png">
   <link rel="manifest" href="/site.webmanifest">
   <link rel="stylesheet" href="styles/globals.css">
   <link rel="stylesheet" href="styles/mobile.css" media="(max-width: 768px)">
+  <meta name="theme-color" content="#050914">
 </head>
 <body>
   <a class="skip-link" href="#maincontent">Skip to content</a>
   <header class="site-header">
     <div class="container header-inner">
-      <a class="logo" href="index.html"><img src="assets/images/G3%20Labs%20Logo.png" alt="G3Labs logo"><div class="brand-text"><div class="brand-name">G3Labs</div><div class="brand-tag">Code the Future</div></div></a>
-      <button id="mobile-nav-toggle" class="mobile-toggle" aria-controls="main-nav" aria-label="Toggle navigation" aria-expanded="false">
-        <span class="hamburger" aria-hidden="true"></span>
+      <a class="logo" href="index.html"><img src="assets/images/g3-labs-wordmark.png" alt="" width="336" height="168"><div class="brand-text"><div class="brand-name">G3 Labs</div><div class="brand-tag">Code the Future</div></div></a>
+      <button type="button" id="mobile-nav-toggle" class="mobile-toggle" aria-controls="main-nav" aria-expanded="false">
+        <span class="hamburger" aria-hidden="true"></span><span>Menu</span>
       </button>
-      <nav id="main-nav" class="nav-menu"><a href="index.html">Home</a><a href="services.html">Services</a><a href="about.html">About</a><a href="portfolio.html">Portfolio</a><a href="contact.html">Contact</a>
+      <nav id="main-nav" class="nav-menu"><a href="index.html">Home</a><a href="services.html">Services</a>
+        <a href="products.html">Products</a><a href="about.html">About</a><a href="portfolio.html">Portfolio</a><a href="contact.html">Contact</a>
         <button id="toggle-animations" class="anim-toggle" aria-pressed="false" aria-label="Toggle animations" aria-live="polite">
           <span class="anim-label">Animations</span>
           <span class="anim-switch" aria-hidden="true"><span class="anim-thumb"></span></span>
@@ -36,15 +38,18 @@
   <main id="maincontent">
     <section class="container">
       <h1>Contact Us</h1>
-      <p class="muted">Tell us about your project and we'll get back to you.</p>
+      <p class="muted" id="contact-intro">Tell us about your project or the product you're interested in and we'll get back to you.</p>
       <div class="contact-details" style="margin-top:0.5rem;margin-bottom:0.75rem">
         <div class="contact-item">Phone: <a href="tel:+2348149479438">+234 8149479438</a></div>
         <div class="contact-item">Email: <a href="mailto:we.code4@gmail.com">we.code4@gmail.com</a></div>
       </div>
-      <form class="contact-form" style="margin-top:1rem">
-        <div class="row"><input name="name" placeholder="Name" required><input name="email" placeholder="Email" required></div>
-        <div class="row"><input name="company" placeholder="Company"></div>
-        <div class="row"><textarea name="message" placeholder="Project details" rows="6"></textarea></div>
+      <form class="contact-form" id="enquiry" aria-label="Product and project enquiries">
+        <div class="row">
+          <label class="contact-field">Name <input name="name" autocomplete="name" required></label>
+          <label class="contact-field">Email <input type="email" name="email" autocomplete="email" required></label>
+        </div>
+        <div class="row"><label class="contact-field">Company (optional) <input name="company" autocomplete="organization"></label></div>
+        <div class="row"><label class="contact-field">How can we help? <textarea name="message" rows="5"></textarea></label></div>
         <div class="row"><button class="btn-primary" type="submit">Send Message</button></div>
       </form>
     </section>
@@ -53,8 +58,8 @@
   <footer class="site-footer" aria-label="Footer">
     <div class="container footer-grid">
       <div class="footer-brand">
-        <a href="index.html" class="footer-logo-link" aria-label="G3Labs home"><img src="assets/images/G3%20Labs%20Logo.png" alt="G3Labs logo"></a>
-        <div class="footer-brand-text"><strong>G3Labs</strong><div class="muted">Code the Future</div><p class="footer-desc">We build secure, scalable software and cybersecurity solutions for modern businesses.</p></div>
+        <a href="index.html" class="footer-logo-link" aria-label="G3 Labs home"><img src="assets/images/g3-labs-wordmark.png" alt="" width="336" height="168"></a>
+        <div class="footer-brand-text"><strong>G3 Labs</strong><div class="muted">Code the Future</div><p class="footer-desc">We build secure, scalable software and cybersecurity solutions for modern businesses.</p></div>
       </div>
       <div class="footer-links">
         <h4>Company</h4>
@@ -62,6 +67,7 @@
           <li><a href="index.html">Home</a></li>
           <li><a href="about.html">About</a></li>
           <li><a href="services.html">Services</a></li>
+          <li><a href="products.html">Products</a></li>
           <li><a href="portfolio.html">Portfolio</a></li>
         </ul>
       </div>
@@ -80,10 +86,11 @@
         <div class="contact-item">Phone: <a href="tel:+2348149479438">+234 8149479438</a></div>
       </div>
     </div>
-    <div class="footer-bottom container"><div class="copyright">© 2026 G3Labs. All rights reserved.</div><div class="footer-policy"><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div></div>
+    <div class="footer-bottom container"><div class="copyright">© 2026 G3 Labs. All rights reserved.</div><div class="footer-policy"><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div></div>
   </footer>
 
   <script src="scripts/main.js"></script>
+  <script src="scripts/product-enquiry.js"></script>
   <link rel="stylesheet" href="styles/assistant-widget.css">
   <script defer src="scripts/assistant-widget.js"></script>
 </body>

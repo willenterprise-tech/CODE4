@@ -1,35 +1,11 @@
 document.addEventListener('DOMContentLoaded', function(){
   const storageKey = 'c4_animations_disabled';
-  const storedRaw = localStorage.getItem(storageKey);
-  const storedDisabled = storedRaw === 'true' ? true : (storedRaw === 'false' ? false : null);
-  // Default behaviour: if user previously toggled, respect that; otherwise animations are ON by default
-  let animationsDisabled = storedDisabled !== null ? storedDisabled : false;
-
-  // Detect low-end / mobile-like devices and avoid starting heavy visuals (particles, many DOM floaters)
-  const isTouch = (typeof window !== 'undefined') && ('ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches));
-  const deviceMemory = (typeof navigator !== 'undefined' && navigator.deviceMemory) ? navigator.deviceMemory : null;
-  const hwConcurrency = (typeof navigator !== 'undefined' && navigator.hardwareConcurrency) ? navigator.hardwareConcurrency : null;
-  const smallViewport = (typeof window !== 'undefined') && window.innerWidth <= 720;
-  const lowMemory = deviceMemory !== null && deviceMemory <= 2;
-  const fewCores = hwConcurrency !== null && hwConcurrency <= 2;
-  // Animations are ON by default (including mobile). Respect user preference only.
-  let heavyVisualsAllowed = !animationsDisabled;
-
-  // Do not auto-disable animations on mobile; allow the user to choose via the toggle.
-  // `animationsDisabled` is already initialized from saved preference (if any).
-  heavyVisualsAllowed = !animationsDisabled;
-
+  const phoneLayout = window.matchMedia('(max-width: 768px)');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let savedPreference = null;
+  try { savedPreference = localStorage.getItem(storageKey); } catch {}
+  let animationsDisabled = savedPreference === null ? reducedMotion.matches : savedPreference === 'true';
   const toggleBtn = document.getElementById('toggle-animations');
-  if(toggleBtn){
-    // support new switch markup: <button> <span.anim-label> <span.anim-switch><span.anim-thumb></span></span> <span.status-text/></button>
-    const labelSpan = toggleBtn.querySelector('.anim-label');
-    const statusSr = toggleBtn.querySelector('.status-text');
-    if(labelSpan) labelSpan.textContent = 'Animations';
-    const activeState = !animationsDisabled; // active when animations are enabled
-    toggleBtn.setAttribute('aria-pressed', String(animationsDisabled));
-    toggleBtn.classList.toggle('active', activeState);
-    if(statusSr) statusSr.textContent = activeState ? 'On' : 'Off';
-  }
 
   // state handles
   let symbolInterval = null;
@@ -124,18 +100,20 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function startAnimations(){
     document.body.classList.remove('animations-disabled');
-    // Start light-weight reveals regardless of device
-    startReveal();
-    // Only enable heavy visuals on capable devices
-    if(heavyVisualsAllowed){
-      startSymbols();
-      startParticles();
-    } else {
+    if(phoneLayout.matches){
       stopSymbols();
       stopParticles();
+      stopReveal();
+    } else {
+      if('IntersectionObserver' in window){
+        stopReveal();
+        startReveal();
+      }
+      startSymbols();
+      startParticles();
     }
     if(toggleBtn){
-      toggleBtn.setAttribute('aria-pressed', 'false');
+      toggleBtn.setAttribute('aria-pressed', 'true');
       toggleBtn.classList.add('active');
       const st = toggleBtn.querySelector('.status-text'); if(st) st.textContent = 'On';
     }
@@ -146,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function(){
     stopParticles();
     stopReveal();
     if(toggleBtn){
-      toggleBtn.setAttribute('aria-pressed', 'true');
+      toggleBtn.setAttribute('aria-pressed', 'false');
       toggleBtn.classList.remove('active');
       const st = toggleBtn.querySelector('.status-text'); if(st) st.textContent = 'Off';
     }
@@ -158,10 +136,13 @@ document.addEventListener('DOMContentLoaded', function(){
   if(toggleBtn){
     toggleBtn.addEventListener('click', function(){
       animationsDisabled = !animationsDisabled;
-      localStorage.setItem(storageKey, String(animationsDisabled));
+      try { localStorage.setItem(storageKey, String(animationsDisabled)); } catch {}
       if(animationsDisabled) stopAnimations(); else startAnimations();
     });
   }
+  phoneLayout.addEventListener('change', function(){
+    if(!animationsDisabled) startAnimations();
+  });
 
   // Contact form: open SMS (mobile) or WhatsApp (desktop) with prefilled content to owner's number; mailto fallback
   const contactForm = document.querySelector('.contact-form');
@@ -197,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
       const smsHref = 'sms:' + smsNumber + '?body=' + encoded;
       const waHref = 'https://wa.me/' + waNumber + '?text=' + encoded;
-      const mailtoHref = 'mailto:we.code4@gmail.com?subject=' + encodeURIComponent('G3Labs website contact: ' + nameVal) + '&body=' + encodeURIComponent(bodyText);
+      const mailtoHref = 'mailto:we.code4@gmail.com?subject=' + encodeURIComponent('G3 Labs website contact: ' + nameVal) + '&body=' + encodeURIComponent(bodyText);
 
       const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       try{
@@ -215,183 +196,160 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
-  // Wenix: thumbnail -> main image swap
-  (function(){
-    const mainImg = document.querySelector('.wenix-main');
-    const thumbs = Array.from(document.querySelectorAll('.wenix-thumbs .thumb'));
-    if(!mainImg || thumbs.length === 0) return;
+  // Homepage Wenix gallery.
+  const gallery = document.querySelector('.wenix-gallery');
+  if(gallery){
+    const preview = gallery.querySelector('.wenix-preview');
+    const mainImage = gallery.querySelector('.wenix-main');
+    const controls = gallery.querySelector('.wenix-controls');
+    const rail = gallery.querySelector('.wenix-thumbnails');
+    const title = gallery.querySelector('.wenix-caption-title');
+    const count = gallery.querySelector('.wenix-count');
+    const thumbnails = Array.from(rail.querySelectorAll('.wenix-thumb'));
 
-    // ensure thumbnails are keyboard accessible and clickable
-    thumbs.forEach((t)=>{
-      t.setAttribute('tabindex','0');
-      t.setAttribute('role','button');
-      t.addEventListener('click', ()=> swapTo(t));
-      t.addEventListener('keydown', (ev)=>{ if(ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); swapTo(t); } });
-    });
-
-    function swapTo(thumb){
-      if(thumb.classList.contains('active')) return;
-      const newSrc = thumb.getAttribute('src');
-      if(!newSrc) return;
-
-      // fade out, swap src, then fade in once loaded
-      mainImg.style.transition = mainImg.style.transition || 'opacity .22s ease';
-      mainImg.style.opacity = '0';
-      const onLoad = function(){
-        mainImg.removeEventListener('load', onLoad);
-        requestAnimationFrame(()=>{ mainImg.style.opacity = '1'; });
-      };
-      mainImg.addEventListener('load', onLoad);
-      // slight delay to let opacity begin transitioning
-      setTimeout(()=> { mainImg.src = newSrc; mainImg.alt = thumb.alt || mainImg.alt || 'Wenix screenshot'; }, 90);
-
-      thumbs.forEach(t=> t.classList.remove('active'));
-      thumb.classList.add('active');
-    }
-
-    // mark active thumb if it matches initial main src
-    thumbs.forEach(t => { if(mainImg.src && t.src && mainImg.src.endsWith(t.src.split('/').pop())) t.classList.add('active'); });
-
-    // Lightbox: open main image in overlay with navigation
     const lightbox = document.getElementById('lightbox');
-    const lbImg = lightbox ? lightbox.querySelector('.lightbox-img') : null;
-    const lbClose = lightbox ? lightbox.querySelector('.lightbox-close') : null;
-    const lbPrev = lightbox ? lightbox.querySelector('.lightbox-prev') : null;
-    const lbNext = lightbox ? lightbox.querySelector('.lightbox-next') : null;
-    const lbCaption = lightbox ? lightbox.querySelector('.lightbox-caption') : null;
+    const lightboxImage = lightbox.querySelector('.lightbox-img');
+    const lightboxCaption = lightbox.querySelector('.lightbox-caption');
+    const lightboxClose = lightbox.querySelector('.lightbox-close');
+    const lightboxPrevious = lightbox.querySelector('.lightbox-prev');
+    const lightboxNext = lightbox.querySelector('.lightbox-next');
+    let selected = 0;
+    let viewerIndex = 0;
 
-    const imageList = thumbs.map(t => t.getAttribute('src'));
-    let lbIndex = 0;
-    function findIndexForSrc(src){
-      if(!src) return -1;
-      const file = src.split('/').pop();
-      return imageList.findIndex(s => s && s.split('/').pop() === file);
+    function wrapIndex(index){
+      return (index + thumbnails.length) % thumbnails.length;
     }
 
-    function openLightboxAt(index){
-      if(!lightbox || !lbImg || imageList.length === 0) return;
-      lbIndex = ((index % imageList.length) + imageList.length) % imageList.length;
-      lbImg.style.opacity = '0';
-      lightbox.classList.add('open');
-      lightbox.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
-      const src = imageList[lbIndex];
-      const onLoad = function(){ lbImg.removeEventListener('load', onLoad); requestAnimationFrame(()=> lbImg.style.opacity = '1'); };
-      lbImg.addEventListener('load', onLoad);
-      lbImg.src = src;
-      lbImg.alt = thumbs[lbIndex].alt || '';
-      if(lbCaption){ lbCaption.textContent = thumbs[lbIndex].alt || ''; lbCaption.setAttribute('aria-hidden','false'); }
-      if(lbClose) lbClose.focus();
+    function selectSlide(index){
+      const next = wrapIndex(index);
+      const button = thumbnails[next];
+      thumbnails[selected].setAttribute('aria-pressed', 'false');
+      button.setAttribute('aria-pressed', 'true');
+      selected = next;
+
+      const label = button.getAttribute('aria-label');
+      mainImage.src = button.querySelector('img').src;
+      mainImage.alt = label;
+      title.textContent = label;
+      count.textContent = (selected + 1) + ' of ' + thumbnails.length;
+
+      const stripBounds = rail.getBoundingClientRect();
+      const buttonBounds = button.getBoundingClientRect();
+      if(buttonBounds.left < stripBounds.left || buttonBounds.right > stripBounds.right){
+        rail.scrollLeft += buttonBounds.left - stripBounds.left - 4;
+      }
     }
 
-    function closeLightbox(){
-      if(!lightbox) return;
+    function showViewerSlide(index){
+      viewerIndex = wrapIndex(index);
+      const button = thumbnails[viewerIndex];
+      lightboxImage.src = button.querySelector('img').src;
+      lightboxImage.alt = button.getAttribute('aria-label');
+      lightboxCaption.textContent = lightboxImage.alt + ' (' + (viewerIndex + 1) + ' of ' + thumbnails.length + ')';
+    }
+
+    function closeViewer(){
       lightbox.classList.remove('open');
       lightbox.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-      if(lbImg) lbImg.src = '';
-      if(lbCaption){ lbCaption.setAttribute('aria-hidden','true'); lbCaption.textContent = ''; }
+      document.body.classList.remove('wenix-viewer-open');
+      lightboxImage.removeAttribute('src');
+      preview.focus({preventScroll: true});
     }
 
-    function showPrev(){ openLightboxAt(lbIndex - 1); }
-    function showNext(){ openLightboxAt(lbIndex + 1); }
+    thumbnails.forEach((button, index) => {
+      button.addEventListener('click', () => selectSlide(index));
+    });
+    controls.querySelector('.wenix-prev').addEventListener('click', () => selectSlide(selected - 1));
+    controls.querySelector('.wenix-next').addEventListener('click', () => selectSlide(selected + 1));
 
-    // Swipe support for hero main image (mobile): allow horizontal swipes to change images
-    try {
-      const mockEl = document.querySelector('.mock-screen') || mainImg.parentElement;
-      let touchStartX = null;
-      let touchStartY = null;
-      const SWIPE_THRESHOLD = 40;
-      if (mockEl) {
-        mockEl.addEventListener('touchstart', function(e){
-          if (!e.touches || e.touches.length !== 1) return;
-          touchStartX = e.touches[0].clientX;
-          touchStartY = e.touches[0].clientY;
-        }, {passive:true});
+    // Only the large image changes slides on a swipe. The thumbnail rail scrolls normally.
+    let touchOrigin = null;
+    preview.addEventListener('touchstart', event => {
+      const touch = event.touches[0];
+      touchOrigin = event.touches.length === 1 ? {x: touch.clientX, y: touch.clientY} : null;
+    }, {passive: true});
+    preview.addEventListener('touchcancel', () => { touchOrigin = null; });
+    preview.addEventListener('touchend', event => {
+      const origin = touchOrigin;
+      touchOrigin = null;
+      if(!origin || event.touches.length) return;
+      const touch = event.changedTouches[0];
+      const dx = touch.clientX - origin.x;
+      const dy = touch.clientY - origin.y;
+      if(Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;
+      if(event.cancelable) event.preventDefault();
+      selectSlide(selected + (dx < 0 ? 1 : -1));
+    }, {passive: false});
 
-        mockEl.addEventListener('touchend', function(e){
-          if (touchStartX === null) return;
-          const t = e.changedTouches && e.changedTouches[0];
-          if (!t) { touchStartX = null; touchStartY = null; return; }
-          const dx = t.clientX - touchStartX;
-          const dy = (touchStartY !== null) ? t.clientY - touchStartY : 0;
-          touchStartX = null; touchStartY = null;
-          // require a mostly-horizontal swipe and a minimum distance
-          if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) < Math.abs(dy)) return;
-          const currentIdx = findIndexForSrc(mainImg.src);
-          if (dx < -SWIPE_THRESHOLD) {
-            // swipe left -> next
-            const nextIdx = (currentIdx + 1) % imageList.length;
-            const tEl = thumbs[nextIdx];
-            if (tEl) swapTo(tEl);
-          } else if (dx > SWIPE_THRESHOLD) {
-            const prevIdx = (currentIdx - 1 + imageList.length) % imageList.length;
-            const tEl = thumbs[prevIdx];
-            if (tEl) swapTo(tEl);
-          }
-        }, {passive:true});
+    preview.addEventListener('click', () => {
+      showViewerSlide(selected);
+      lightbox.classList.add('open');
+      lightbox.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('wenix-viewer-open');
+      lightboxClose.focus();
+    });
+    lightboxClose.addEventListener('click', closeViewer);
+    lightboxPrevious.addEventListener('click', () => showViewerSlide(viewerIndex - 1));
+    lightboxNext.addEventListener('click', () => showViewerSlide(viewerIndex + 1));
+    lightbox.addEventListener('click', event => {
+      if(event.target === lightbox) closeViewer();
+    });
+    lightbox.addEventListener('keydown', event => {
+      if(event.key === 'Escape') closeViewer();
+      if(event.key === 'ArrowLeft' || event.key === 'ArrowRight'){
+        event.preventDefault();
+        showViewerSlide(viewerIndex + (event.key === 'ArrowLeft' ? -1 : 1));
       }
-    } catch (err) {
-      // don't interrupt other scripts if swipe initialization fails
-      console.warn('Hero swipe init failed', err);
-    }
+      if(event.key === 'Tab' && event.shiftKey && document.activeElement === lightboxClose){
+        event.preventDefault();
+        lightboxNext.focus();
+      } else if(event.key === 'Tab' && !event.shiftKey && document.activeElement === lightboxNext){
+        event.preventDefault();
+        lightboxClose.focus();
+      }
+    });
 
-    if(mainImg){
-      mainImg.style.cursor = 'zoom-in';
-      mainImg.addEventListener('click', function(){
-        const idx = findIndexForSrc(mainImg.src);
-        openLightboxAt(idx >= 0 ? idx : 0);
-      });
-    }
-
-    if(lbClose) lbClose.addEventListener('click', closeLightbox);
-    if(lbPrev) lbPrev.addEventListener('click', showPrev);
-    if(lbNext) lbNext.addEventListener('click', showNext);
-
-    if(lightbox){
-      lightbox.addEventListener('click', function(e){ if(e.target === lightbox) closeLightbox(); });
-      document.addEventListener('keydown', function(e){
-        if(!lightbox.classList.contains('open')) return;
-        if(e.key === 'Escape') return closeLightbox();
-        if(e.key === 'ArrowLeft'){ e.preventDefault(); return showPrev(); }
-        if(e.key === 'ArrowRight'){ e.preventDefault(); return showNext(); }
-      });
-    }
-  })();
+    controls.hidden = false;
+    rail.hidden = false;
+    preview.disabled = false;
+  }
 
   // Mobile nav toggle: show/hide the collapsed nav on small screens
   const mobileToggle = document.getElementById('mobile-nav-toggle');
   const navMenu = document.querySelector('.nav-menu');
   if(mobileToggle && navMenu){
-    function closeMobileNav(){
-      navMenu.classList.remove('open');
-      mobileToggle.setAttribute('aria-expanded', 'false');
-      mobileToggle.classList.remove('open');
-      document.body.style.overflow = '';
+    const header = mobileToggle.closest('.site-header');
+    function setMobileNav(open){
+      navMenu.classList.toggle('open', open);
+      mobileToggle.setAttribute('aria-expanded', String(open));
+      document.body.classList.toggle('mobile-menu-open', open);
     }
-    mobileToggle.addEventListener('click', function(e){
-      e.preventDefault();
-      const opened = navMenu.classList.toggle('open');
-      mobileToggle.setAttribute('aria-expanded', String(opened));
-      mobileToggle.classList.toggle('open', opened);
-      document.body.style.overflow = opened ? 'hidden' : '';
+    header.classList.add('nav-enhanced');
+    mobileToggle.addEventListener('click', function(){
+      setMobileNav(!navMenu.classList.contains('open'));
     });
-    navMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', function(){ if(window.innerWidth <= 720) closeMobileNav(); }));
-    window.addEventListener('resize', function(){ if(window.innerWidth > 720 && navMenu.classList.contains('open')) closeMobileNav(); });
+    navMenu.addEventListener('click', function(event){
+      if(event.target.closest('a') && navMenu.classList.contains('open')){
+        setMobileNav(false);
+        mobileToggle.focus({preventScroll:true});
+      }
+    });
+    document.addEventListener('click', function(event){
+      if(navMenu.classList.contains('open') && !header.contains(event.target)) setMobileNav(false);
+    });
+    document.addEventListener('keydown', function(event){
+      if(event.key === 'Escape' && navMenu.classList.contains('open')){
+        setMobileNav(false);
+        mobileToggle.focus({preventScroll:true});
+      }
+    });
+    header.addEventListener('focusout', function(event){
+      if(event.relatedTarget && !header.contains(event.relatedTarget)) setMobileNav(false);
+    });
+    phoneLayout.addEventListener('change', function(){
+      if(!phoneLayout.matches) setMobileNav(false);
+    });
   }
-
-  // Keep heavy visuals active at all times, including during scrolling on desktop and mobile.
-  // The previous scroll pause logic was intentionally removed to satisfy the always-on animation requirement.
-  (function(){
-    const noOp = function() {};
-    const passiveOpts = { passive: true };
-    window.addEventListener('wheel', noOp, passiveOpts);
-    window.addEventListener('touchstart', noOp, passiveOpts);
-    window.addEventListener('touchmove', noOp, passiveOpts);
-    window.addEventListener('pointerdown', noOp, passiveOpts);
-    window.addEventListener('scroll', noOp, passiveOpts);
-    document.addEventListener('visibilitychange', noOp);
-  })();
 
   // Back-to-top button: appears only when the user scrolled to the bottom of the page
   (function(){
@@ -410,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function(){
       // try smooth scroll, fallback to immediate if not supported or if it fails
       try{
         if('scrollBehavior' in document.documentElement.style){
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
         } else {
           scroller.scrollTop = 0;
         }

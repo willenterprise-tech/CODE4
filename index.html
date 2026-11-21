@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="google-site-verification" content="D9aIOBmECJrEC6M7mSD6xc6M_DKFx1ikhnN9ADy3yaI" />
-  <title>G3Labs — Code the Future</title>
-  <meta name="description" content="G3Labs — Custom Software Development, Cybersecurity, Cloud Solutions and Mobile Apps.">
+  <title>G3 Labs — Code the Future</title>
+  <meta name="description" content="G3 Labs — Custom Software Development, Cybersecurity, Cloud Solutions and Mobile Apps.">
   <meta name="robots" content="index,follow">
-  <meta property="og:title" content="G3Labs — Code the Future">
+  <meta property="og:title" content="G3 Labs — Code the Future">
   <meta property="og:description" content="We create secure, scalable, and innovative digital solutions that help businesses automate, grow, and stay protected.">
   <meta property="og:image" content="/assets/images/G3%20Labs%20Logo.png">
   <meta property="og:url" content="https://www.code4dev.vercel.app/">
@@ -16,16 +16,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="icon" href="assets/images/G3%20Labs%20Logo.png" type="image/png">
+  <link rel="icon" href="assets/images/g3-labs-icon-192.png" type="image/png">
   <link rel="manifest" href="/site.webmanifest">
-  <meta name="theme-color" content="#081225">
+  <meta name="theme-color" content="#050914">
   <link rel="stylesheet" href="styles/globals.css">
   <link rel="stylesheet" href="styles/mobile.css" media="(max-width: 768px)">
+  <link rel="stylesheet" href="styles/products.css">
+  <link rel="stylesheet" href="styles/gallery.css">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "G3Labs",
+    "name": "G3 Labs",
     "url": "https://www.code4dev.vercel.app/",
     "logo": "https://www.code4dev.vercel.app/assets/images/G3%20Labs%20Logo.png",
     "contactPoint": [{ "@type": "ContactPoint", "contactType": "sales", "email": "we.code4@gmail.com" }]
@@ -38,19 +40,20 @@
   <header class="site-header">
     <div class="container header-inner">
       <a class="logo" href="index.html">
-        <img src="assets/images/G3%20Labs%20Logo.png" alt="G3Labs logo">
+        <img src="assets/images/g3-labs-wordmark.png" alt="" width="336" height="168">
         <div class="brand-text">
-          <div class="brand-name">G3Labs</div>
+          <div class="brand-name">G3 Labs</div>
           <div class="brand-tag">Code the Future</div>
         </div>
       </a>
-      <button id="mobile-nav-toggle" class="mobile-toggle" aria-controls="main-nav" aria-label="Toggle navigation" aria-expanded="false">
-        <span class="hamburger" aria-hidden="true"></span>
+      <button type="button" id="mobile-nav-toggle" class="mobile-toggle" aria-controls="main-nav" aria-expanded="false">
+        <span class="hamburger" aria-hidden="true"></span><span>Menu</span>
       </button>
       <nav id="main-nav" class="nav-menu">
         <a href="index.html">Home</a>
         <a href="services.html">Services</a>
-        <a href="https://c4academy.vercel.app/" target="_blank" rel="noopener noreferrer">G3Labs Academy</a>
+        <a href="products.html">Products</a>
+        <a href="https://c4academy.vercel.app/" target="_blank" rel="noopener noreferrer">Code 4 Academy</a>
         <a href="about.html">About</a>
         <a href="portfolio.html">Portfolio</a>
         <a href="contact.html">Contact</a>
@@ -84,17 +87,37 @@
           </div>
         </div>
         <div class="hero-right">
-          <div class="device-mockup">
-            <div class="mock-screen neon-overlay">
-              <img src="assets/images/hero/WENIX%20SPLASH%20SCREEN.png" alt="Wenix splash" class="wenix-main">
-              <div class="wenix-thumbs">
-                <img src="assets/images/hero/WENIX%20SPLASH%20SCREEN.png" alt="Wenix Splash" class="thumb">
-                <img src="assets/images/hero/login.png" alt="Wenix Login" class="thumb">
-                <img src="assets/images/hero/dashbord.png" alt="Wenix Dashboard" class="thumb">
-                <img src="assets/images/hero/students.png" alt="Wenix Students Page" class="thumb">
-              </div>
+          <section class="wenix-gallery" aria-label="Wenix screenshot gallery">
+            <div class="wenix-screen">
+              <button type="button" class="wenix-preview" aria-label="View Wenix screenshot full size" aria-haspopup="dialog" disabled>
+                <img src="assets/images/hero/wenix/login%20page.png" alt="Login page" class="wenix-main" width="1920" height="1080" fetchpriority="high" decoding="async">
+              </button>
             </div>
-          </div>
+            <div class="wenix-controls" hidden>
+              <button type="button" class="wenix-prev" aria-label="Previous screenshot">&lsaquo;</button>
+              <p class="wenix-caption" aria-live="polite"><span class="wenix-caption-title">Login page</span> <span class="wenix-count">1 of 17</span></p>
+              <button type="button" class="wenix-next" aria-label="Next screenshot">&rsaquo;</button>
+            </div>
+            <div class="wenix-thumbnails" role="group" aria-label="Choose a screenshot" hidden>
+              <button type="button" class="wenix-thumb" aria-label="Login page" aria-pressed="true"><img src="assets/images/hero/wenix/login%20page.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="Dashboard" aria-pressed="false"><img src="assets/images/hero/wenix/dashboard.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="Student management" aria-pressed="false"><img src="assets/images/hero/wenix/student%20page.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="Exam results" aria-pressed="false"><img src="assets/images/hero/wenix/Screenshot%202026-11-21%20003203.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="School profile settings" aria-pressed="false"><img src="assets/images/hero/wenix/Screenshot%202026-11-21%20003214.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="School colour palette" aria-pressed="false"><img src="assets/images/hero/wenix/Screenshot%202026-11-21%20003218.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="Portal contacts and links" aria-pressed="false"><img src="assets/images/hero/wenix/Screenshot%202026-11-21%20003222.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="Registration and email formats" aria-pressed="false"><img src="assets/images/hero/wenix/Screenshot%202026-11-21%20003242.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="Report card settings" aria-pressed="false"><img src="assets/images/hero/wenix/Screenshot%202026-11-21%20003249.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="Result card designer" aria-pressed="false"><img src="assets/images/hero/wenix/Screenshot%202026-11-21%20003255.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="Backup centre overview" aria-pressed="false"><img src="assets/images/hero/wenix/Screenshot%202026-11-21%20003342.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="Google Drive backups" aria-pressed="false"><img src="assets/images/hero/wenix/Screenshot%202026-11-21%20003348.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="Local backups" aria-pressed="false"><img src="assets/images/hero/wenix/Screenshot%202026-11-21%20003352.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="Backup and sync preferences" aria-pressed="false"><img src="assets/images/hero/wenix/Screenshot%202026-11-21%20003355.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="Student results workspace" aria-pressed="false"><img src="assets/images/hero/wenix/Screenshot%202026-11-21%20003411.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="Live exam monitor" aria-pressed="false"><img src="assets/images/hero/wenix/Screenshot%202026-11-21%20003632.png" alt="" loading="lazy" decoding="async"></button>
+              <button type="button" class="wenix-thumb" aria-label="Exam attempt history" aria-pressed="false"><img src="assets/images/hero/wenix/Screenshot%202026-11-21%20003638.png" alt="" loading="lazy" decoding="async"></button>
+            </div>
+          </section>
         </div>
       </div>
       <div class="hero-bg-anim"></div>
@@ -256,6 +279,31 @@
       </div>
     </section>
 
+    <section class="container product-showcase" aria-labelledby="home-products-title">
+      <span class="product-eyebrow">Built by G3 Labs</span>
+      <div class="product-showcase-heading">
+        <div>
+          <h2 id="home-products-title">Our products</h2>
+          <p>Software to connect your school and simplify assessments.</p>
+        </div>
+        <a class="product-text-link" href="products.html">Explore all products &rarr;</a>
+      </div>
+      <div class="product-summary-grid">
+        <article class="product-summary">
+          <span class="product-category">School management</span>
+          <h3>Wenix</h3>
+          <p>Connect school administration, student records and parent portals in one school management system.</p>
+          <a class="product-text-link" href="products.html#wenix">Discover Wenix &rarr;</a>
+        </article>
+        <article class="product-summary">
+          <span class="product-category">Computer-based testing</span>
+          <h3>CBT System</h3>
+          <p>Deliver timed examinations, automate scoring and explore performance through results and analytics.</p>
+          <a class="product-text-link" href="products.html#cbt">Discover CBT System &rarr;</a>
+        </article>
+      </div>
+    </section>
+
     <section class="services container">
       <h3 class="section-title">Services</h3>
       <div class="services-grid">
@@ -281,7 +329,7 @@
         </article>
         <article class="card">
           <div class="icon">●</div>
-          <h4>G3Labs Academy</h4>
+          <h4>Code 4 Academy</h4>
           <p>Hands-on courses teaching coding, software development, AI training, and data analysis.</p>
         </article>
         <article class="card">
@@ -294,7 +342,7 @@
 
     <section class="about container">
       <h3 class="section-title">Powering Ideas. Building the Future.</h3>
-      <p>G3Labs is a technology company specializing in software development and cybersecurity. We combine innovation, security, and engineering excellence to deliver reliable solutions that help businesses scale confidently.</p>
+      <p>G3 Labs is a technology company specializing in software development and cybersecurity. We combine innovation, security, and engineering excellence to deliver reliable solutions that help businesses scale confidently.</p>
       <div class="stats-grid">
         <div class="stat"><strong>50+</strong><span>Projects Delivered</span></div>
         <div class="stat"><strong>99.9%</strong><span>Secure Uptime</span></div>
@@ -359,9 +407,9 @@
     <section class="testimonials container">
       <h3 class="section-title">What Our Clients Say</h3>
       <div class="test-grid">
-        <blockquote class="glass"><p>G3Labs delivered beyond expectations — secure and fast.</p><cite>— Samantha R., CEO</cite></blockquote>
+        <blockquote class="glass"><p>G3 Labs delivered beyond expectations — secure and fast.</p><cite>— Samantha R., CEO</cite></blockquote>
         <blockquote class="glass"><p>Professional team and excellent communication.</p><cite>— Aaron T., CTO</cite></blockquote>
-        <blockquote class="glass"><p>Our product launch went smoothly thanks to G3Labs.</p><cite>— Lina K., Product Lead</cite></blockquote>
+        <blockquote class="glass"><p>Our product launch went smoothly thanks to G3 Labs.</p><cite>— Lina K., Product Lead</cite></blockquote>
       </div>
     </section>
 
@@ -376,9 +424,12 @@
     <section class="contact container" id="contact">
       <h3 class="section-title">Contact</h3>
       <form class="contact-form" style="margin-top:1rem">
-        <div class="row"><input name="name" placeholder="Name" required><input name="email" placeholder="Email" required></div>
-        <div class="row"><input name="company" placeholder="Company"></div>
-        <div class="row"><textarea name="message" placeholder="Project details" rows="6"></textarea></div>
+        <div class="row">
+          <label class="contact-field">Name <input name="name" autocomplete="name" required></label>
+          <label class="contact-field">Email <input type="email" name="email" autocomplete="email" required></label>
+        </div>
+        <div class="row"><label class="contact-field">Company (optional) <input name="company" autocomplete="organization"></label></div>
+        <div class="row"><label class="contact-field">How can we help? <textarea name="message" rows="5"></textarea></label></div>
         <div class="row"><button class="btn-primary" type="submit">Send Message</button></div>
       </form>
     </section>
@@ -388,11 +439,11 @@
   <footer class="site-footer" aria-label="Footer">
     <div class="container footer-grid">
       <div class="footer-brand">
-        <a href="index.html" class="footer-logo-link" aria-label="G3Labs home">
-          <img src="assets/images/G3%20Labs%20Logo.png" alt="G3Labs logo">
+        <a href="index.html" class="footer-logo-link" aria-label="G3 Labs home">
+          <img src="assets/images/g3-labs-wordmark.png" alt="" width="336" height="168">
         </a>
         <div class="footer-brand-text">
-          <strong>G3Labs</strong>
+          <strong>G3 Labs</strong>
           <div class="muted">Code the Future</div>
           <p class="footer-desc">We build secure, scalable software and cybersecurity solutions for modern businesses.</p>
         </div>
@@ -403,6 +454,7 @@
           <li><a href="index.html">Home</a></li>
           <li><a href="about.html">About</a></li>
           <li><a href="services.html">Services</a></li>
+          <li><a href="products.html">Products</a></li>
           <li><a href="portfolio.html">Portfolio</a></li>
         </ul>
       </div>
@@ -422,18 +474,18 @@
       </div>
     </div>
     <div class="footer-bottom container">
-      <div class="copyright">© 2026 G3Labs. All rights reserved.</div>
+      <div class="copyright">© 2026 G3 Labs. All rights reserved.</div>
       <div class="footer-policy"><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div>
     </div>
   </footer>
 
   <!-- Lightbox viewer (opened when clicking the hero main image) -->
-  <div id="lightbox" class="lightbox" aria-hidden="true" role="dialog" aria-label="Image viewer">
+  <div id="lightbox" class="lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Image viewer">
     <button class="lightbox-close" aria-label="Close (Esc)">&times;</button>
     <button class="lightbox-nav lightbox-prev" aria-label="Previous image">‹</button>
     <div class="lightbox-wrap" role="document">
-      <div class="lightbox-caption" aria-hidden="true"></div>
-      <img class="lightbox-img" src="" alt="">
+      <div class="lightbox-caption" aria-live="polite"></div>
+      <img class="lightbox-img" alt="">
     </div>
     <button class="lightbox-nav lightbox-next" aria-label="Next image">›</button>
   </div>

@@ -1,15 +1,20 @@
 {
-  "name": "G3Labs",
-  "short_name": "G3Labs",
+  "name": "G3 Labs",
+  "short_name": "G3 Labs",
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#081225",
-  "theme_color": "#081225",
+  "background_color": "#050914",
+  "theme_color": "#050914",
   "icons": [
     {
-      "src": "assets/images/G3%20Labs%20Logo.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "src": "assets/images/g3-labs-icon-192.png",
+      "sizes": "192x192"
+    },
+    {
+      "type": "image/png",
+      "src": "assets/images/g3-labs-icon-512.png",
+      "sizes": "512x512"
     }
   ]
 }

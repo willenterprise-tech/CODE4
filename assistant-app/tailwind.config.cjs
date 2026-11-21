@@ -4,9 +4,9 @@ module.exports = {
     extend: {
       colors: {
         g3labs: {
-          navy: '#081225',
-          electric: '#00E5FF',
-          cyan: '#00CFFF'
+          navy: '#050914',
+          electric: '#00E5E8',
+          cyan: '#00D4DC'
         }
       }
     }

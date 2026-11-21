@@ -1,8 +1,8 @@
 /* Assistant widget styles */
 :root{
-  --c4-navy:#081225;
-  --c4-electric:#00E5FF;
-  --c4-cyan:#00CFFF;
+  --c4-navy:#050914;
+  --c4-electric:#00E5E8;
+  --c4-cyan:#00D4DC;
 }
 
 /* Remove assistant entirely on small/mobile viewports */
@@ -12,7 +12,6 @@
 
 /* Extra pin overrides to ensure assistant stays fully visible on small screens */
 @media (max-width:820px){
-  html,body{overflow-x:hidden}
   /* Make the robot capture touch gestures on small screens so dragging works reliably */
   .c4a-robot-btn{touch-action:none}
   /* keep assistant defaults; avoid forcing full-width or hiding the widget here */

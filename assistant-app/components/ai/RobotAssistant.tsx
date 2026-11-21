@@ -7,32 +7,34 @@ import ChatPanel from './ChatPanel'
 type Message = { id: string; from: 'user' | 'bot'; text: string }
 
 const SUGGESTIONS = [
+  'Tell me about your products',
   'Tell me about your services',
   'What is cybersecurity?',
   'Show portfolio',
-  'Contact G3Labs',
+  'Contact G3 Labs',
   'Get a quote'
 ]
 
 export default function RobotAssistant(){
   const [open, setOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([{ id: 'welcome', from: 'bot', text: "Hi! I'm the G3Labs assistant. How can I help you today?" }])
+  const [messages, setMessages] = useState<Message[]>([{ id: 'welcome', from: 'bot', text: "Hi! I'm the G3 Labs assistant. How can I help you today?" }])
   const [isResponding, setResponding] = useState(false)
   const [headFollow, setHeadFollow] = useState({ x: 0, y: 0 })
 
   // simple response mapping
   // Knowledge base
   const KB = {
-    companyName: 'G3Labs',
+    companyName: 'G3 Labs',
     tagline: 'Code the Future',
     website: 'www.code4dev.vercel.app',
     email: 'we.code4@gmail.com',
-    description: 'G3Labs is a software development, cybersecurity, and data solutions company that helps businesses build, secure, and scale digital products. We also provide coding and AI training through G3Labs Academy.',
+    description: 'G3 Labs is a software development, cybersecurity, and data solutions company that helps businesses build, secure, and scale digital products. We also provide coding and AI training through Code 4 Academy.',
     quick: {
-      services: 'We specialize in custom software development, web and mobile applications, cybersecurity, cloud solutions, data analysis, G3Labs Academy, and DevOps with QA testing.',
+      products: 'Our products include Wenix for school management and the CBT System for computer-based assessments. Explore their features and request a demo on the G3 Labs Products page.',
+      services: 'We specialize in custom software development, web and mobile applications, cybersecurity, cloud solutions, data analysis, Code 4 Academy, and DevOps with QA testing.',
       cybersecurity: 'We protect your systems, networks, and data through assessments, secure architecture, and monitoring.',
       data: 'We transform data into actionable insights using analytics, dashboards, and visualizations.',
-      academy: 'We provide practical training in coding, software development, AI, and data analysis through G3Labs Academy.',
+      academy: 'We provide practical training in coding, software development, AI, and data analysis through Code 4 Academy.',
       portfolio: 'We have built e-commerce platforms, school management systems, cybersecurity dashboards, and AI business assistants.',
       contact: 'You can reach us at we.code4@gmail.com or visit www.code4dev.vercel.app.'
     }
@@ -40,6 +42,7 @@ export default function RobotAssistant(){
 
   function cannedResponseFor(text: string){
     const t = (text || '').toLowerCase();
+    if(t.includes('product') || t.includes('wenix') || t.includes('cbt')) return KB.quick.products;
     if(t.includes('service') || t.includes('what do you offer')) return KB.quick.services;
     if(t.includes('cyber')) return KB.quick.cybersecurity;
     if(t.includes('data') || t.includes('analytics')) return KB.quick.data;

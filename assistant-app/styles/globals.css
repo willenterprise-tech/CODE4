@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 :root{
-  --g3labs-navy: #081225;
-  --g3labs-electric: #00E5FF;
-  --g3labs-cyan: #00CFFF;
+  --g3labs-navy: #050914;
+  --g3labs-electric: #00E5E8;
+  --g3labs-cyan: #00D4DC;
 }
 
 html,body,#root{height:100%}

@@ -1,6 +1,6 @@
-# G3Labs Assistant (assistant-app)
+# G3 Labs Assistant (assistant-app)
 
-This is a small Next.js (App Router) demo app that implements the G3Labs assistant UI.
+This is a small Next.js (App Router) demo app that implements the G3 Labs assistant UI.
 
 Features included:
 - Floating robot avatar with cursor-follow, blink and wave on load

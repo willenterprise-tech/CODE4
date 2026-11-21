@@ -12,13 +12,13 @@
   const root = document.createElement('div')
   root.id = rootId
   root.innerHTML = `
-    <div class="c4a-panel" role="dialog" aria-label="G3Labs Assistant chat" hidden>
+    <div class="c4a-panel" role="dialog" aria-label="G3 Labs Assistant chat" hidden>
       <div class="c4a-chat-header">
         <div style="display:flex;gap:12px;align-items:center">
           <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(90deg,#052230,#062634);display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="10" r="3" fill="#00E5FF" /></svg></div>
           <div>
-            <div class="c4a-chat-title">G3Labs Assistant</div>
-            <div class="c4a-muted">Your friendly G3Labs assistant</div>
+            <div class="c4a-chat-title">G3 Labs Assistant</div>
+            <div class="c4a-muted">Your friendly G3 Labs assistant</div>
           </div>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
@@ -29,7 +29,7 @@
         <button class="c4a-quick-btn">Tell me about your services</button>
         <button class="c4a-quick-btn">What is cybersecurity?</button>
         <button class="c4a-quick-btn">Show portfolio</button>
-        <button class="c4a-quick-btn">Contact G3Labs</button>
+        <button class="c4a-quick-btn">Contact G3 Labs</button>
         <button class="c4a-quick-btn">Get a quote</button>
       </div>
       <div class="c4a-chat-messages" aria-live="polite"></div>
@@ -51,7 +51,7 @@
           </g>
         </g>
       </svg>
-      <div class="c4a-bubble">Hi! I'm the G3Labs assistant. How can I help you today?</div>
+      <div class="c4a-bubble">Hi! I'm the G3 Labs assistant. How can I help you today?</div>
     </button>
   `
   root.className = 'c4-robot-wrap'
@@ -357,19 +357,19 @@
     messages.scrollTop = messages.scrollHeight
   }
 
-  // Knowledge base for the G3Labs assistant (company info, services, FAQ)
+  // Knowledge base for the G3 Labs assistant (company info, services, FAQ)
   const C4_KB = {
-    companyName: 'G3Labs',
+    companyName: 'G3 Labs',
     tagline: 'Code the Future',
     website: 'www.code4dev.vercel.app',
     email: 'we.code4@gmail.com',
-    description: 'G3Labs is a software development, cybersecurity, and data solutions company that helps businesses build, secure, and scale digital products. We also provide coding and AI training through G3Labs Academy.',
+    description: 'G3 Labs is a software development, cybersecurity, and data solutions company that helps businesses build, secure, and scale digital products. We also provide coding and AI training through Code 4 Academy.',
     services: [
       'Custom Software & Web/Mobile Applications: Build tailored backend systems, responsive websites, SaaS platforms, and cross-platform mobile apps.',
       'Cybersecurity: Protect systems, networks, and sensitive data through security assessments, secure architecture, vulnerability scanning, and monitoring.',
       'Cloud Solutions: Scalable infrastructure, cloud migration, automation, backup, and disaster recovery.',
       'Data Analysis: Data pipelines, analytics, dashboards, visualization, and actionable insights for better decision-making.',
-      'G3Labs Academy: Hands-on courses in coding, software development, AI training, and data analysis.',
+      'Code 4 Academy: Hands-on courses in coding, software development, AI training, and data analysis.',
       'DevOps & QA Testing: CI/CD pipelines, automated deployment, performance testing, and quality assurance.'
     ],
     industries: ['Education','Healthcare','Finance','Retail','Logistics','Real Estate','Government','Startups','Nonprofits'],
@@ -380,27 +380,28 @@
       { title: 'AI Business Assistant', desc: 'AI-driven insights and automated workflows.', tech: 'Python, FastAPI, GPT' }
     ],
     faqs: {
-      services: 'We offer custom software development, web and mobile applications, cybersecurity, cloud solutions, data analysis, G3Labs Academy training, and DevOps with QA testing.',
+      services: 'We offer custom software development, web and mobile applications, cybersecurity, cloud solutions, data analysis, Code 4 Academy training, and DevOps with QA testing.',
       cyber: 'Yes. We help protect systems, networks, and sensitive data through security assessments, testing, and monitoring.',
       data: 'Yes. We build data pipelines, dashboards, and visualizations that help businesses make informed decisions.',
-      academy: 'G3Labs Academy provides hands-on courses in coding, software development, AI, and data analysis.',
+      academy: 'Code 4 Academy provides hands-on courses in coding, software development, AI, and data analysis.',
       custom: 'Absolutely. We design and develop secure, scalable solutions tailored to your needs.',
       contact: 'You can reach us at we.code4@gmail.com or visit www.code4dev.vercel.app.',
       cost: 'Pricing depends on scope, features, integrations, and timelines. Contact us for a tailored proposal.',
       timeline: 'Timelines range from a few weeks for smaller projects to several months for large-scale platforms.'
     },
     quickResponses: {
-      services: 'We specialize in custom software development, web and mobile applications, cybersecurity, cloud solutions, data analysis, G3Labs Academy, and DevOps with QA testing.',
+      products: 'Our products include Wenix for school management and the CBT System for computer-based assessments. Visit the Products page (products.html) to explore their features and request a demo.',
+      services: 'We specialize in custom software development, web and mobile applications, cybersecurity, cloud solutions, data analysis, Code 4 Academy, and DevOps with QA testing.',
       cybersecurity: 'We protect your systems, networks, and data through assessments, secure architecture, and monitoring.',
       dataAnalysis: 'We transform data into actionable insights using analytics, dashboards, and visualizations.',
-      academy: 'We provide practical training in coding, software development, AI, and data analysis through G3Labs Academy.',
+      academy: 'We provide practical training in coding, software development, AI, and data analysis through Code 4 Academy.',
       portfolio: 'We have built e-commerce platforms, school management systems, cybersecurity dashboards, and AI business assistants.',
       contact: 'You can reach us at we.code4@gmail.com or visit www.code4dev.vercel.app.'
     },
     ctas: [
       "Let's discuss your project.",
       'Request a free consultation.',
-      'Contact G3Labs today.',
+      'Contact G3 Labs today.',
       'Get a tailored proposal.',
       'Build something great together.'
     ]
@@ -409,6 +410,7 @@
   function canned(text){
     const t = (text || '').toLowerCase();
     if(!t) return C4_KB.quickResponses.services;
+    if(t.includes('product') || t.includes('wenix') || t.includes('cbt')) return C4_KB.quickResponses.products;
     if(t.includes('service') || t.includes('what do you offer') || t.includes('what services') || t.includes('what do you offer')) return C4_KB.quickResponses.services;
     if(t.includes('cyber')) return C4_KB.quickResponses.cybersecurity;
     if(t.includes('data analysis') || t.includes('data') || t.includes('analytics')) return C4_KB.quickResponses.dataAnalysis;
